@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32319.34
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DomainModel", "DomainModel", "{A9409327-3A77-4614-8EF2-1322FB7F3E3A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataMapper", "DataMapper", "{4020459E-113B-477C-92D2-75F99465EE4F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ServiceLayer", "ServiceLayer", "{14913564-ACE6-4629-858B-DABFD6CE2C96}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{27C60C65-4B0D-4915-951D-6D5818E77D8C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "View", "View", "{0CFF1349-9CDF-4DB5-8886-2EE75C2EED38}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulationKernel", "DomainModel\SimulationKernel\SimulationKernel.csproj", "{88B01823-5540-4EF3-8A42-35490F6A9CEA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulationKernel", "DataMapper\SimulationKernel\SimulationKernel.csproj", "{59D490AA-EAF7-4BBD-B65D-C6D53B13D78E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulationKernel", "ServiceLayer\SimulationKernel\SimulationKernel.csproj", "{49550514-1689-4E0F-9737-5B7560432F0D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{36E5095D-B2F6-4A22-8D27-D42569EABE9E}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{88B01823-5540-4EF3-8A42-35490F6A9CEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88B01823-5540-4EF3-8A42-35490F6A9CEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88B01823-5540-4EF3-8A42-35490F6A9CEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88B01823-5540-4EF3-8A42-35490F6A9CEA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59D490AA-EAF7-4BBD-B65D-C6D53B13D78E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59D490AA-EAF7-4BBD-B65D-C6D53B13D78E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59D490AA-EAF7-4BBD-B65D-C6D53B13D78E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59D490AA-EAF7-4BBD-B65D-C6D53B13D78E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49550514-1689-4E0F-9737-5B7560432F0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49550514-1689-4E0F-9737-5B7560432F0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49550514-1689-4E0F-9737-5B7560432F0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49550514-1689-4E0F-9737-5B7560432F0D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{88B01823-5540-4EF3-8A42-35490F6A9CEA} = {A9409327-3A77-4614-8EF2-1322FB7F3E3A}
+		{59D490AA-EAF7-4BBD-B65D-C6D53B13D78E} = {4020459E-113B-477C-92D2-75F99465EE4F}
+		{49550514-1689-4E0F-9737-5B7560432F0D} = {14913564-ACE6-4629-858B-DABFD6CE2C96}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A14B26AA-19FC-47D3-89CB-70DBF3087DCF}
+	EndGlobalSection
+EndGlobal
