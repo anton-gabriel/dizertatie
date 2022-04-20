@@ -7,18 +7,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="out_blender\**" />
+    <Content Remove="out_blender\**" />
+    <EmbeddedResource Remove="out_blender\**" />
+    <None Remove="out_blender\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="wwwroot\js\" />
     <Folder Include="wwwroot\Icons\" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grpc.AspNetCore" Version="2.40.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Protobuf Include="..\..\..\PythonKernel\file_tranfer\file_tranfer.proto" GrpcServices="Client">
-      <Link>Protos\file_tranfer.proto</Link>
-    </Protobuf>
+    <ProjectReference Include="..\..\ServiceLayer\SimulationKernel\SimulationKernel.csproj" />
   </ItemGroup>
 
 </Project>

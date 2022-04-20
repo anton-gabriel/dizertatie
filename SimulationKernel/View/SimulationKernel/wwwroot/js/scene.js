@@ -12,7 +12,7 @@ export function renderScene(host) {
   });
 
   const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
-  camera.position.set(5, 3, 5);
+  camera.position.set(3, 2, 3);
   scene.userData.camera = camera;
 
   const controls = new OrbitControls(camera, renderer.domElement);

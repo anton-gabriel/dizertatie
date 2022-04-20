@@ -1,5 +1,4 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
+using ServiceLayer.SimulationKernel;
 using SimulationKernel.Data;
 
 var builder = WebApplication.CreateBuilder(args);

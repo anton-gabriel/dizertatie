@@ -1,5 +1,6 @@
 ﻿@page "/"
 
+@using ServiceLayer.SimulationKernel
 @using SimulationKernel.Data
 
 @implements IAsyncDisposable
@@ -21,7 +22,7 @@
       </div>
       <div class="card-body">
         <div class="input-group">
-          <InputFile OnChange="@LoadFile" class="form-control" type="file" accept=".obj" />
+          <InputFile OnChange="@LoadFile" class="form-control" type="file" accept=".obj" id="fileUpload" />
           <div class="input-group-append">
             <button @onclick="UploadFileAsync" disabled="@(_UserFile is null)" class="btn btn-outline-secondary rounded-0" type="button">Upload</button>
           </div>
@@ -29,6 +30,13 @@
             <button @onclick="Process" disabled="@(!_Uploaded)" class="btn btn-outline-secondary border-radius-right-only" type="button">Start processing</button>
           </div>
         </div>
+
+        @if (@_UploadMessage is not null)
+        {
+          <div class="alert alert-warning p-1 mt-2" for="fileUpload">
+            @_UploadMessage
+          </div>
+        }
 
         @if (@_ProgressPercent.HasValue)
         {
@@ -58,6 +66,5 @@
 </div>
 
 @code {
-  private bool IsDisabled { get; set; } = true;
   private bool _Uploaded = false;
 }

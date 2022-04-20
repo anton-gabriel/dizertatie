@@ -1,21 +1,18 @@
-﻿namespace SimulationKernel.Data
+﻿namespace ServiceLayer.SimulationKernel
 {
+  using DomainModel.SimulationKernel;
   using Generated;
   using Google.Protobuf;
   using Grpc.Core;
   using Grpc.Net.Client;
-  using Microsoft.AspNetCore.Components.Forms;
+  using Microsoft.Extensions.Logging;
   using static Generated.FileTransfer;
   using Status = Generated.Status;
 
-  public interface ITransferDataService
-  {
-    Task<Status> UploadAsync(IBrowserFile file, IProgress<uint> progress);
-  }
-
   internal class TransferDataService : ITransferDataService
   {
-    private readonly long _MaxFileSize = 1024 * 1024;
+    private static readonly string _FileExtension = ".obj";
+    private static readonly long _MaxFileSize = 1024 * 1024;
 
     private readonly ILogger<TransferDataService> _Logger;
     private readonly FileTransferClient _Client;
@@ -27,7 +24,7 @@
       _Client = new FileTransferClient(channel);
     }
 
-    public async Task<Status> UploadAsync(IBrowserFile file, IProgress<uint> progress)
+    public async Task<Status> UploadAsync(FileData file, IProgress<uint> progress)
     {
       Status status = Status.Pending;
       try
@@ -35,11 +32,10 @@
         using var transfer = _Client.Transfer();
         await SendMetadata(transfer, file.Name);
 
-        using Stream readStream = file.OpenReadStream(_MaxFileSize);
         int bytesRead = 0, totalRead = 0;
 
         var buffer = new byte[10 * 1024];//10KB buffer
-        while ((bytesRead = await readStream.ReadAsync(buffer)) != 0)
+        while ((bytesRead = await file.ReadStream.ReadAsync(buffer)) != 0)
         {
           totalRead += bytesRead;
           await SendFileChunk(transfer, bytesRead, buffer);
@@ -77,7 +73,7 @@
         Metadata = new MetaData()
         {
           Name = Path.GetFileNameWithoutExtension(name),
-          Extension = ".obj"
+          Extension = _FileExtension
         }
       });
     }

@@ -1,5 +1,7 @@
 namespace SimulationKernel.Pages
 {
+  using DomainModel.SimulationKernel;
+  using Generated;
   using Microsoft.AspNetCore.Components;
   using Microsoft.AspNetCore.Components.Forms;
   using Microsoft.JSInterop;
@@ -10,9 +12,9 @@ namespace SimulationKernel.Pages
   public partial class Index
   {
     ElementReference CanvasHostReference;
-    private double[][]? _ProcessedData;
     private IJSObjectReference? _Module;
     private uint? _ProgressPercent;
+    private string? _UploadMessage;
     private IBrowserFile? _UserFile;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -35,10 +37,10 @@ namespace SimulationKernel.Pages
       string[] files = Directory.GetFiles(filePath, "*.obj").OrderBy(name => name).ToArray();
       foreach (string file in files)
       {
-        _ProcessedData = await _ProcessedDataService.ReadObjFile(file);
+        double[][]? data = await _ProcessedDataService.ReadObjFile(file);
         if (_Module != null)
         {
-          await _Module.InvokeVoidAsync("updateScene", (object)_ProcessedData);
+          await _Module.InvokeVoidAsync("updateScene", (object)data);
           await Task.Delay(100);
         }
       }
@@ -63,15 +65,45 @@ namespace SimulationKernel.Pages
     {
       if (_UserFile != null)
       {
-        await _TransferDataService.UploadAsync(_UserFile, new Progress<uint>((percent) =>
-        {
-          _ProgressPercent = percent;
-          StateHasChanged();
-        })).ContinueWith(t => _Uploaded = true);
-        await Task.Delay(300).ContinueWith(t => _ProgressPercent = null);
+        //To do
+        FileData fileData = await UploadFile(_UserFile);
+        //Load the scene only if upload was successful
+        FileData fileData1 = new FileData(_UserFile.OpenReadStream(), _UserFile.Name, _UserFile.Size);
+        await LoadScene(fileData1);
+        //await Task.Delay(300).ContinueWith(t => _ProgressPercent = null);
       }
     }
 
+    private async Task<FileData> UploadFile(IBrowserFile file)
+    {
+      var fileData = new FileData(file.OpenReadStream(), file.Name, file.Size);
+      await _TransferDataService.UploadAsync(fileData, new Progress<uint>((percent) =>
+      {
+        _ProgressPercent = percent;
+        StateHasChanged();
+      })).ContinueWith(t =>
+      {
+        Status status = t.Result;
+        if (status == Status.Succeded)
+        {
+          _Uploaded = true;
+        }
+        else
+        {
+          _UploadMessage = "Upload failed";
+        }
+      });
+      return fileData;
+    }
+
+    private async Task LoadScene(FileData file)
+    {
+      double[][] data = await _ProcessedDataService.ReadObjFileAsync(file.ReadStream);
+      if (_Module != null)
+      {
+        await _Module.InvokeVoidAsync("updateScene", (object)data);
+      }
+    }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {

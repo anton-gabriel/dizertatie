@@ -9,6 +9,12 @@
 
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="10.4.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.18.0" />
+    <PackageReference Include="Grpc.Net.ClientFactory" Version="2.40.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.40.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.3">
       <PrivateAssets>all</PrivateAssets>
@@ -20,6 +26,12 @@
   <ItemGroup>
     <ProjectReference Include="..\..\DataMapper\SimulationKernel\SimulationKernel.csproj" />
     <ProjectReference Include="..\..\DomainModel\SimulationKernel\SimulationKernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="..\..\..\PythonKernel\file_tranfer\file_tranfer.proto" GrpcServices="Client">
+      <Link>Protos\file_tranfer.proto</Link>
+    </Protobuf>
   </ItemGroup>
 
   <ItemGroup>
