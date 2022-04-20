@@ -24,6 +24,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulationKernel", "View\SimulationKernel\SimulationKernel.csproj", "{10E4EC46-2232-422D-BFEB-8857F1477C41}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,6 +44,10 @@ Global
 		{49550514-1689-4E0F-9737-5B7560432F0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{49550514-1689-4E0F-9737-5B7560432F0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{49550514-1689-4E0F-9737-5B7560432F0D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10E4EC46-2232-422D-BFEB-8857F1477C41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10E4EC46-2232-422D-BFEB-8857F1477C41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10E4EC46-2232-422D-BFEB-8857F1477C41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10E4EC46-2232-422D-BFEB-8857F1477C41}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,6 +56,7 @@ Global
 		{88B01823-5540-4EF3-8A42-35490F6A9CEA} = {A9409327-3A77-4614-8EF2-1322FB7F3E3A}
 		{59D490AA-EAF7-4BBD-B65D-C6D53B13D78E} = {4020459E-113B-477C-92D2-75F99465EE4F}
 		{49550514-1689-4E0F-9737-5B7560432F0D} = {14913564-ACE6-4629-858B-DABFD6CE2C96}
+		{10E4EC46-2232-422D-BFEB-8857F1477C41} = {0CFF1349-9CDF-4DB5-8886-2EE75C2EED38}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A14B26AA-19FC-47D3-89CB-70DBF3087DCF}

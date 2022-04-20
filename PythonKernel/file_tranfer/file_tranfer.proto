@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+option csharp_namespace = "Generated";
+
+enum Status {
+  Pending = 0;
+  Progress = 1;
+  Succeded = 2;
+  Failed = 3;
+}
+
+message File {
+  bytes chunk = 1;
+}
+
+message MetaData {
+  string name = 1;
+  string extension = 2;
+}
+
+message FileTransferRequest {
+  oneof request {
+    MetaData metadata = 1;
+    File file = 2;
+  }
+}
+
+message FileTransferResponse {
+  Status status = 1;
+}
+
+service FileTransfer {
+  rpc Transfer(stream FileTransferRequest) returns (FileTransferResponse);
+}

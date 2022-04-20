@@ -1,0 +1,63 @@
+﻿@page "/"
+
+@using SimulationKernel.Data
+
+@implements IAsyncDisposable
+
+@inject IJSRuntime _JS
+@inject IWebHostEnvironment _Environment
+@inject ILogger<Index> _Logger
+@inject ITransferDataService _TransferDataService;
+@inject ProcessedDataService _ProcessedDataService
+
+<PageTitle>Process data</PageTitle>
+
+<div class="m-5">
+
+  <div class="col-xl-12">
+    <div class="card shadow">
+      <div class="card-header">
+        <h4>Process data</h4>
+      </div>
+      <div class="card-body">
+        <div class="input-group">
+          <InputFile OnChange="@LoadFile" class="form-control" type="file" accept=".obj" />
+          <div class="input-group-append">
+            <button @onclick="UploadFileAsync" disabled="@(_UserFile is null)" class="btn btn-outline-secondary rounded-0" type="button">Upload</button>
+          </div>
+          <div class="input-group-append">
+            <button @onclick="Process" disabled="@(!_Uploaded)" class="btn btn-outline-secondary border-radius-right-only" type="button">Start processing</button>
+          </div>
+        </div>
+
+        @if (@_ProgressPercent.HasValue)
+        {
+          <div class="progress mt-1">
+            <div class="progress-bar bg-info" role="progressbar" aria-valuenow="@_ProgressPercent.Value" aria-valuemin="0" aria-valuemax="100" style="width:@_ProgressPercent.Value%"></div>
+          </div>
+        }
+
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-12  mt-5">
+    <div class="card shadow">
+      <div class="card-header">
+        <div class="btn-toolbar bg-light p-1" role="toolbar" aria-label="Toolbar with button groups">
+          <div class="btn-group mr-2" role="group" aria-label="First group">
+            <button @onclick="ResetCamera" type="button" class="btn btn-outline-secondary">Reset camera</button>
+          </div>
+        </div>
+      </div>
+
+      <div @ref=CanvasHostReference></div>
+    </div>
+  </div>
+
+</div>
+
+@code {
+  private bool IsDisabled { get; set; } = true;
+  private bool _Uploaded = false;
+}

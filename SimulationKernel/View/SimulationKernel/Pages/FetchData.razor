@@ -1,0 +1,88 @@
+﻿@page "/fetchdata"
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<PageTitle>Items</PageTitle>
+
+@using SimulationKernel.Data
+@inject ProcessedDataService ProcessedDataService
+
+
+
+@if (_ProcessedData == null)
+{
+  <p><em>Loading...</em></p>
+}
+else
+{
+  <div class="album py-5 bg-light">
+    <div class="container">
+      <div class="row">
+        @for (int index = 0; index < _ProcessedData.Length; index++)
+        {
+          <div class="col-md-4">
+            <div class="card mb-4 shadow-sm rounded-bottom">
+              <div>
+                <div class="host">
+                  <canvas id="canvas"></canvas>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="d-flex flex-row align-items-center">
+                  <div class="icon"> <img src="icons/task_white_36dp.svg" /> </div>
+                  <div class="ms-2 c-details">
+                    <h6 class="mb-0">Obj file 005</h6>
+                    <span>@System.DateTime.Now.ToLongDateString()</span>
+                  </div>
+                </div>
+                <div class="badge"> <span class="text-warning">In progress</span> </div>
+                <div class="progress mt-3 mb-3">
+                  <div class="progress-bar bg-success" role="progressbar" style="width: 75%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">75%</div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                  </div>
+                  <small class="text-muted">9 mins</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+@code {
+  private double[]? _ProcessedData;
+  private IJSObjectReference? _Module;
+
+
+  protected override async Task OnInitializedAsync()
+  {
+    await base.OnInitializedAsync();
+    _ProcessedData = new double[3];
+  }
+
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    if (firstRender)
+    {
+      _Module = await JS.InvokeAsync<IJSObjectReference>("import", "/js/scenes.js");
+      if (_Module != null)
+      {
+        await _Module.InvokeVoidAsync("renderScenes");
+      }
+    }
+    await base.OnAfterRenderAsync(firstRender);
+  }
+
+  async ValueTask IAsyncDisposable.DisposeAsync()
+  {
+    if (_Module is not null)
+    {
+      await _Module.DisposeAsync();
+    }
+  }
+}
