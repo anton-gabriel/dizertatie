@@ -2,6 +2,7 @@
 
 @using ServiceLayer.SimulationKernel
 @using SimulationKernel.Data
+@using System.ComponentModel.DataAnnotations
 
 @implements IAsyncDisposable
 
@@ -59,6 +60,8 @@
         </div>
       </div>
 
+      <input @bind-value="@actualNumber" @bind-value:event="oninput" type="range" class="m-4 form-range" />
+  
       <div @ref=CanvasHostReference></div>
     </div>
   </div>
@@ -67,4 +70,5 @@
 
 @code {
   private bool _Uploaded = false;
+  private int actualNumber { get; set; } = 10;
 }

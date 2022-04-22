@@ -74,3 +74,8 @@ a, .btn-link {
 .secondary-text-color {
   color: #7c8895;
 }
+
+.form-range  {
+  width: auto;
+  height: auto;
+}

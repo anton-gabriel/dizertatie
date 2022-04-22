@@ -63,42 +63,37 @@ namespace SimulationKernel.Pages
 
     private async Task UploadFileAsync()
     {
-      if (_UserFile != null)
+        if (_UserFile != null)
       {
-        //To do
-        FileData fileData = await UploadFile(_UserFile);
-        //Load the scene only if upload was successful
-        FileData fileData1 = new FileData(_UserFile.OpenReadStream(), _UserFile.Name, _UserFile.Size);
-        await LoadScene(fileData1);
-        //await Task.Delay(300).ContinueWith(t => _ProgressPercent = null);
-      }
-    }
-
-    private async Task<FileData> UploadFile(IBrowserFile file)
-    {
-      var fileData = new FileData(file.OpenReadStream(), file.Name, file.Size);
-      await _TransferDataService.UploadAsync(fileData, new Progress<uint>((percent) =>
-      {
-        _ProgressPercent = percent;
-        StateHasChanged();
-      })).ContinueWith(t =>
-      {
-        Status status = t.Result;
+        Status status = await UploadFile(_UserFile);
         if (status == Status.Succeded)
         {
+          //Load the scene only if upload was successful
           _Uploaded = true;
+          await LoadScene(_UserFile);
         }
         else
         {
-          _UploadMessage = "Upload failed";
+          _UploadMessage = "File upload failed";
         }
-      });
-      return fileData;
+        _ProgressPercent = null;
+      }
     }
 
-    private async Task LoadScene(FileData file)
+    private async Task<Status> UploadFile(IBrowserFile file)
     {
-      double[][] data = await _ProcessedDataService.ReadObjFileAsync(file.ReadStream);
+      var fileData = new FileData(file.OpenReadStream(), file.Name, file.Size);
+      Status result = await _TransferDataService.UploadAsync(fileData, new Progress<uint>((percent) =>
+      {
+        _ProgressPercent = percent;
+        StateHasChanged();
+      }));
+      return result;
+    }
+
+    private async Task LoadScene(IBrowserFile file)
+    {
+      double[][] data = await _ProcessedDataService.ReadObjFileAsync(file.OpenReadStream());
       if (_Module != null)
       {
         await _Module.InvokeVoidAsync("updateScene", (object)data);
