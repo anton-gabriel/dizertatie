@@ -3,7 +3,6 @@
   using DataMapper.SimulationKernel.Repository;
   using FluentValidation;
   using Microsoft.Extensions.Logging;
-  using System.Collections.Generic;
 
   /// <summary>
   /// Represents the base class for services types.
@@ -30,28 +29,28 @@
       IValidator<TEntity> validator,
       ILogger<Service<TEntity, TRepository>> logger)
     {
-      this.Repository = repository ?? throw new System.ArgumentNullException(nameof(repository));
-      this.Validator = validator ?? throw new System.ArgumentNullException(nameof(validator));
-      this.Logger = logger ?? throw new System.ArgumentNullException(nameof(logger));
+      this._Repository = repository ?? throw new System.ArgumentNullException(nameof(repository));
+      this._Validator = validator ?? throw new System.ArgumentNullException(nameof(validator));
+      this._Logger = logger ?? throw new System.ArgumentNullException(nameof(logger));
     }
 
     /// <summary>
     /// Gets the logger.
     /// </summary>
     /// <value>The logger.</value>
-    protected ILogger<Service<TEntity, TRepository>> Logger { get; }
+    protected ILogger<Service<TEntity, TRepository>> _Logger { get; }
 
     /// <summary>
     /// Gets the repository.
     /// </summary>
     /// <value>The repository.</value>
-    protected TRepository Repository { get; }
+    protected TRepository _Repository { get; }
 
     /// <summary>
     /// Gets the validator.
     /// </summary>
     /// <value>The validator.</value>
-    protected IValidator<TEntity> Validator { get; }
+    protected IValidator<TEntity> _Validator { get; }
 
     /// <summary>
     /// Adds the specified entity.
@@ -66,18 +65,9 @@
         throw new System.ArgumentNullException(nameof(entity));
       }
 
-      this.Validator.ValidateAndThrow(entity);
-      this.Repository.Insert(entity);
-      this.Logger.LogInformation(string.Format(Resources.EntityAdded, typeof(TEntity)));
-    }
-
-    /// <summary>
-    /// Gets all entities.
-    /// </summary>
-    /// <returns>The entities.</returns>
-    public virtual IEnumerable<TEntity> GetAll()
-    {
-      return this.Repository.Find();
+      this._Validator.ValidateAndThrow(entity);
+      this._Repository.Insert(entity);
+      this._Logger.LogInformation(string.Format(Resources.EntityAdded, typeof(TEntity)));
     }
 
     /// <summary>
@@ -93,7 +83,7 @@
         throw new System.ArgumentNullException(nameof(id));
       }
 
-      return this.Repository.Get(id);
+      return this._Repository.Get(id);
     }
 
     /// <summary>
@@ -108,8 +98,8 @@
         throw new System.ArgumentNullException(nameof(id));
       }
 
-      this.Repository.Delete(id);
-      this.Logger.LogInformation(string.Format(Resources.EntityRemoved, typeof(TEntity)));
+      this._Repository.Delete(id);
+      this._Logger.LogInformation(string.Format(Resources.EntityRemoved, typeof(TEntity)));
     }
 
     /// <summary>
@@ -125,9 +115,9 @@
         throw new System.ArgumentNullException(nameof(entity));
       }
 
-      this.Validator.ValidateAndThrow(entity);
-      this.Repository.Update(entity);
-      this.Logger.LogInformation(string.Format(Resources.EntityUpdated, typeof(TEntity)));
+      this._Validator.ValidateAndThrow(entity);
+      this._Repository.Update(entity);
+      this._Logger.LogInformation(string.Format(Resources.EntityUpdated, typeof(TEntity)));
     }
   }
 }

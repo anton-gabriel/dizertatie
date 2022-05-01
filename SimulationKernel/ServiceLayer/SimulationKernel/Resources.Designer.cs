@@ -61,6 +61,15 @@ namespace ServiceLayer.SimulationKernel {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Name must be alphanumeric, dash, underscore or dot.
+        /// </summary>
+        internal static string AlphanumericRequired {
+            get {
+                return ResourceManager.GetString("AlphanumericRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Entity {0} added successfully.
         /// </summary>
         internal static string EntityAdded {

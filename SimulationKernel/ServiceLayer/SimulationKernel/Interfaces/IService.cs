@@ -1,7 +1,5 @@
 ﻿namespace ServiceLayer.SimulationKernel
 {
-  using System.Collections.Generic;
-
   /// <summary>
   /// Represents the service contract.
   /// </summary>
@@ -13,12 +11,6 @@
     /// </summary>
     /// <param name="entity">The entity.</param>
     void Add(T entity);
-
-    /// <summary>
-    /// Gets all entities.
-    /// </summary>
-    /// <returns>The entities.</returns>
-    IEnumerable<T> GetAll();
 
     /// <summary>
     /// Gets the entity by identifier.
