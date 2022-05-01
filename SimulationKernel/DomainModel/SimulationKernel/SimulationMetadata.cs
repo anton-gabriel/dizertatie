@@ -1,14 +1,15 @@
 ﻿namespace DomainModel.SimulationKernel
 {
-  public class SimulationDataItem
+  public class SimulationMetadata
   {
     public int Id { get; private set; }
     public string Name { get; set; }
+    public string DataLocation { get; set; }
     public ProcessingStatus Status { get; set; }
     public DateTime CreationDate { get; set; }
     public TimeSpan? Duration { get; set; }
 
-    public static SimulationDataItem Empty => new()
+    public static SimulationMetadata Empty => new()
     {
       Id = -1,
       Name = string.Empty,

@@ -33,7 +33,7 @@
   private IJSObjectReference? _Module;
 
   [Parameter]
-  public SimulationDataItem Data { get; set; } = SimulationDataItem.Empty;
+  public SimulationMetadata Data { get; set; } = SimulationMetadata.Empty;
 
   protected override async Task OnAfterRenderAsync(bool firstRender)
   {

@@ -27,7 +27,7 @@ else
 }
 
 @code {
-  private IEnumerable<SimulationDataItem>? Items;
+  private IEnumerable<SimulationMetadata>? Items;
 
   protected override async Task OnInitializedAsync()
   {
@@ -35,7 +35,7 @@ else
     Items = Enumerable.Range(1, 15).Select(_ =>
     {
       var random = new Random();
-      return new SimulationDataItem()
+      return new SimulationMetadata()
         {
           Name = $"Test_{_}",
           Status = (ProcessingStatus)random.Next(3),
