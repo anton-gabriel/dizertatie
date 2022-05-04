@@ -70,7 +70,7 @@
     {
       return transfer.RequestStream.WriteAsync(new FileTransferRequest()
       {
-        Metadata = new MetaData()
+        Metadata = new FileMetaData()
         {
           Name = Path.GetFileNameWithoutExtension(name),
           Extension = _FileExtension

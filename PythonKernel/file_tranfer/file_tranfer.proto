@@ -2,6 +2,7 @@ syntax = "proto3";
 
 option csharp_namespace = "Generated";
 
+// --- File ---
 enum Status {
   Pending = 0;
   Progress = 1;
@@ -13,14 +14,14 @@ message File {
   bytes chunk = 1;
 }
 
-message MetaData {
+message FileMetaData {
   string name = 1;
   string extension = 2;
 }
 
 message FileTransferRequest {
   oneof request {
-    MetaData metadata = 1;
+    FileMetaData metadata = 1;
     File file = 2;
   }
 }
@@ -29,6 +30,31 @@ message FileTransferResponse {
   Status status = 1;
 }
 
+message FileTransferResponse2 {
+  oneof response {
+    FileMetaData metadata = 1;
+    File file = 2;
+  }
+  Status status = 3;
+}
+// --- File ---
+
+
+// --- Process ---
+enum ProcessingStatus {
+  Started = 0;
+  Processed = 1;
+}
+
+message MetaData {
+  string data_location = 1;
+  ProcessingStatus status = 2;
+}
+// --- Process ---
+
+
 service FileTransfer {
   rpc Transfer(stream FileTransferRequest) returns (FileTransferResponse);
+  rpc Process(FileMetaData) returns (stream MetaData);
+  rpc Download(MetaData) returns (stream FileTransferResponse2);
 }

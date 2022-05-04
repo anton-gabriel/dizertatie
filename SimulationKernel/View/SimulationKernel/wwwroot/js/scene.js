@@ -55,13 +55,22 @@ export function resetCamera() {
   }
 }
 
-export function updateScene(points) {
+export function updateScene(data) {
   var vertices = [];
   
-  for (var i = 0; i < points.length; i++) {
-    var vertex = points[i];
+  for (var i = 0; i < data.points.length; i++) {
+    var vertex = data.points[i];
     vertices.push(new THREE.Vector3(vertex[0], vertex[1], vertex[2]));
   }
+
+  //var geometry = new THREE.BufferGeometry();
+  //geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+  //geometry.setIndex(faces);
+
+  //var material = new THREE.MeshBasicMaterial({ color: 0x006BCADB, side: THREE.DoubleSide });
+  //mesh = new THREE.Mesh(geometry, material);
+  //scene.add(geometry);
+
 
   //update mesh
   mesh.geometry.setFromPoints(vertices);
@@ -70,7 +79,7 @@ export function updateScene(points) {
   let vertex3;
   for ( let i = 0; i < positionAttribute.count; i ++ ) {
     vertex2.fromBufferAttribute( positionAttribute, i ); // read vertex
-    vertex3 = points[i];
+    vertex3 = data.points[i];
     // do something with vertex
     positionAttribute.setXYZ(i, vertex3[0], vertex3[1], vertex3[2] ); // write coordinates
   }

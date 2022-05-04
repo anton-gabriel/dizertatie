@@ -1,8 +1,9 @@
 ﻿namespace SimulationKernel.Data
 {
+  using DomainModel.SimulationKernel;
   public class ProcessedDataService
   {
-    public async Task<double[][]> ReadObjFileAsync(Stream stream)
+    public async Task<ObjectData> ReadObjFileAsync(Stream stream)
     {
       (IList<float[]> vertices, IList<int[]> faces) = await ReadObjDataAsync(stream);
       // Convert vertices and faces to an array of triangles
@@ -17,10 +18,10 @@
         triangles.Add(new double[] { v2[0], v2[1], v2[2] });
         triangles.Add(new double[] { v3[0], v3[1], v3[2] });
       }
-      return triangles.ToArray();
+      return new ObjectData(triangles.ToArray());
     }
 
-    private static async Task<(IList<float[]>, IList<int[]>)> ReadObjDataAsync(Stream stream)
+    public static async Task<(IList<float[]>, IList<int[]>)> ReadObjDataAsync(Stream stream)
     {
       var vertices = new List<float[]>();
       var faces = new List<int[]>();
@@ -64,7 +65,7 @@
     }
 
     // Read the .obj file and return the vertices and faces
-    private static (IList<float[]>, IList<int[]>) ReadObjData(string objFilePath)
+    public static (IList<float[]>, IList<int[]>) ReadObjData(string objFilePath)
     {
       var vertices = new List<float[]>();
       var faces = new List<int[]>();
