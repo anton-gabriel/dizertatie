@@ -5,7 +5,7 @@ import re
 class FileTransferService(file_tranfer_pb2_grpc.FileTransferServicer):
 
     def Transfer(self, request_iterator, context):
-        status = file_tranfer_pb2.Status.Progress
+        status = file_tranfer_pb2.TransferStatus.Progress
         writer = None
         try:
             for request in request_iterator:
@@ -23,9 +23,9 @@ class FileTransferService(file_tranfer_pb2_grpc.FileTransferServicer):
                     # Write to file, in append mode
                     writer.write(request.file.chunk)
         except:
-            status = file_tranfer_pb2.Status.Failed
+            status = file_tranfer_pb2.TransferStatus.Failed
         else:
-            status = file_tranfer_pb2.Status.Succeded
+            status = file_tranfer_pb2.TransferStatus.Succeded
         finally:
             if writer:
                 writer.close()

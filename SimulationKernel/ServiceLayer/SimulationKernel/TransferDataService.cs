@@ -7,12 +7,12 @@
   using Grpc.Net.Client;
   using Microsoft.Extensions.Logging;
   using static Generated.FileTransfer;
-  using Status = Generated.Status;
+  using TransferStatus = Generated.TransferStatus;
 
   internal class TransferDataService : ITransferDataService
   {
     private static readonly string _FileExtension = ".obj";
-    private static readonly long _MaxFileSize = 1024 * 1024;
+    private static readonly int _ChunkSize = 10 * 1024;//10KB buffer
 
     private readonly ILogger<TransferDataService> _Logger;
     private readonly FileTransferClient _Client;
@@ -24,9 +24,10 @@
       _Client = new FileTransferClient(channel);
     }
 
-    public async Task<Status> UploadAsync(FileData file, IProgress<uint> progress)
+    #region Upload
+    public async Task<TransferStatus> UploadAsync(FileData file, IProgress<uint> progress)
     {
-      Status status = Status.Pending;
+      TransferStatus status = TransferStatus.Pending;
       try
       {
         using var transfer = _Client.Transfer();
@@ -34,7 +35,7 @@
 
         int bytesRead = 0, totalRead = 0;
 
-        var buffer = new byte[10 * 1024];//10KB buffer
+        var buffer = new byte[_ChunkSize];
         while ((bytesRead = await file.ReadStream.ReadAsync(buffer)) != 0)
         {
           totalRead += bytesRead;
@@ -49,7 +50,7 @@
       }
       catch (Exception ex)
       {
-        _Logger.LogWarning(ex, "Error loading file");
+        _Logger.LogWarning(ex, "Error uploading file");
       }
       return status;
     }
@@ -60,7 +61,7 @@
       {
         File = new File()
         {
-          //ByteString.CopyFrom
+          //Prefer over ByteString.CopyFrom
           Chunk = UnsafeByteOperations.UnsafeWrap(buffer.AsMemory(0, bytesRead))
         }
       });
@@ -77,6 +78,48 @@
         }
       });
     }
+    #endregion
+
+    #region Download
+    public async Task<TransferStatus> DownloadAsync(string location, IProgress<uint> progress)
+    {
+      TransferStatus status = TransferStatus.Pending;
+      try
+      {
+        using var call = _Client.Download(new ProcessingMetaData
+        {
+          DataLocation = location
+        });
+
+        string downloadLocation = Path.Combine("downloaded", Path.GetFileNameWithoutExtension(location), DateTime.Now.ToString("yyyyMMddHHmmssffff"));
+        await using var writeStream = System.IO.File.Create(Path.ChangeExtension(downloadLocation, _FileExtension));
+
+        await foreach (FileDownloadResponse response in call.ResponseStream.ReadAllAsync())
+        {
+          switch (response.ResponseCase)
+          {
+            case FileDownloadResponse.ResponseOneofCase.Metadata:
+              string fileName = Path.ChangeExtension(response.Metadata.Name, response.Metadata.Extension);
+              break;
+            case FileDownloadResponse.ResponseOneofCase.File:
+              var bytes = response.File.Chunk.Memory;
+              await writeStream.WriteAsync(bytes);
+              break;
+            default:
+              break;
+          }
+
+          status = response.Status;
+          progress.Report(response.Progress);
+        }
+      }
+      catch (Exception ex)
+      {
+        _Logger.LogWarning(ex, "Error downloading file");
+      }
+      return status;
+    }
+    #endregion
 
     private static GrpcChannel CreateChannel(string address)
     {

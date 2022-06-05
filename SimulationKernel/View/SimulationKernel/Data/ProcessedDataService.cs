@@ -46,7 +46,7 @@
       return (vertices, faces);
     }
 
-    public Task<double[][]> ReadObjFile(string objFilePath)
+    public ObjectData ReadObjFile(string objFilePath)
     {
       (IList<float[]> vertices, IList<int[]> faces) = ReadObjData(objFilePath);
       // Convert vertices and faces to an array of triangles
@@ -61,7 +61,7 @@
         triangles.Add(new double[] { v2[0], v2[1], v2[2] });
         triangles.Add(new double[] { v3[0], v3[1], v3[2] });
       }
-      return Task.FromResult(triangles.ToArray());
+      return new ObjectData(triangles.ToArray());
     }
 
     // Read the .obj file and return the vertices and faces

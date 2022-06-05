@@ -1,11 +1,9 @@
 ﻿@page "/fetchdata"
-@inject IJSRuntime _JS
 
 <PageTitle>Items</PageTitle>
 
 @using DomainModel.SimulationKernel
 @using SimulationKernel.Data
-@inject ProcessedDataService ProcessedDataService
 
 
 @if (Items == null)
@@ -14,7 +12,7 @@
 }
 else
 {
-  <div class="album py-5 bg-light">
+  <div class="album py-5">
     <div class="container">
       <div class="row">
         @foreach (var item in Items)
@@ -32,15 +30,14 @@ else
   protected override async Task OnInitializedAsync()
   {
     await base.OnInitializedAsync();
-    Items = Enumerable.Range(1, 15).Select(_ =>
+    Items = Enumerable.Range(0, 3).Select(index =>
     {
-      var random = new Random();
       return new SimulationMetadata()
         {
-          Name = $"Test_{_}",
-          Status = (ProcessingStatus)random.Next(3),
+          Name = $"Test_{index}",
+          Status = (ProcessingStatus) (index % 3),
           CreationDate = DateTime.Now,
-          Duration = TimeSpan.FromMinutes(_)
+          Duration = TimeSpan.FromMinutes(index)
         };
     });
   }

@@ -1,10 +1,11 @@
 ﻿namespace ServiceLayer.SimulationKernel
 {
   using DomainModel.SimulationKernel;
-  using Status = Generated.Status;
+  using TransferStatus = Generated.TransferStatus;
 
   public interface ITransferDataService
   {
-    Task<Status> UploadAsync(FileData file, IProgress<uint> progress);
+    Task<TransferStatus> UploadAsync(FileData file, IProgress<uint> progress);
+    Task<TransferStatus> DownloadAsync(string location, IProgress<uint> progress);
   }
 }

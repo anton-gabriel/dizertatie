@@ -15,7 +15,7 @@
       </div>
       <div class="card-body">
         <div class="input-group">
-          <InputFile OnChange="@LoadFile" class="form-control" type="file" accept=".obj" id="fileUpload" multiple/>
+          <InputFile OnChange="@LoadFiles" class="form-control" type="file" accept=".obj" id="fileUpload" multiple />
           <div class="input-group-append">
             <button @onclick="UploadFileAsync" disabled="@(!_UserFiles.Any())" class="btn btn-outline-secondary rounded-0" type="button">Upload</button>
           </div>
@@ -52,8 +52,12 @@
         </div>
       </div>
 
-      <input @bind-value="@actualNumber" @bind-value:event="oninput" type="range" class="m-4 form-range" />
-  
+      <input @oninput="@UpdateFrame"
+             min=0
+             max=@_DataFrames.Count
+             disabled="@(!_DataFrames.Any())"
+             type="range" class="m-4 form-range" />
+
       <div @ref=CanvasHostReference></div>
     </div>
   </div>
@@ -61,5 +65,14 @@
 </div>
 
 @code {
-  private int actualNumber { get; set; } = 10;
+  private async Task UpdateFrame(ChangeEventArgs e)
+  {
+    int frame = Convert.ToInt32(e.Value);
+
+    if (_Module != null && frame < _DataFrames.Count)
+    {
+      await _Module.InvokeVoidAsync("updateScene", _DataFrames[frame]);
+    }
+  }
+
 }

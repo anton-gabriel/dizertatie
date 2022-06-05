@@ -13,15 +13,20 @@ namespace SimulationKernel.Pages
 
   public partial class Index : ComponentBase, IAsyncDisposable
   {
+    private static readonly string _AllowedExtension = ".obj";
     ElementReference CanvasHostReference;
     private IJSObjectReference? _Module;
     private uint? _ProgressPercent;
     private string? _UploadMessage;
-    private IEnumerable<IBrowserFile> _UserFiles = Enumerable.Empty<IBrowserFile>();
+    private IReadOnlyList<IBrowserFile> _UserFiles = new List<IBrowserFile>();
     private bool _Uploaded = false;
+    private readonly List<ObjectData> _DataFrames = new();
+    private static readonly long _MaxFileSize = 10 * 1024 * 1024;//10 MB
 
     [Inject]
-    private IJSRuntime JS { get; set; } = default!;
+    private ILogger<Index> Logger { get; set; } = default!;
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; } = default!;
     [Inject]
     private ITransferDataService TransferDataService { get; set; } = default!;
     [Inject]
@@ -31,7 +36,7 @@ namespace SimulationKernel.Pages
     {
       if (firstRender)
       {
-        _Module = await JS.InvokeAsync<IJSObjectReference>("import", "/js/scene.js");
+        _Module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "/js/scene.js");
         if (_Module != null)
         {
           await _Module.InvokeVoidAsync("renderScene", CanvasHostReference);
@@ -47,10 +52,10 @@ namespace SimulationKernel.Pages
       string[] files = Directory.GetFiles(filePath, "*.obj").OrderBy(name => name).ToArray();
       foreach (string file in files)
       {
-        double[][]? data = await ProcessedDataService.ReadObjFile(file);
+        ObjectData data = ProcessedDataService.ReadObjFile(file);
         if (_Module != null)
         {
-          await _Module.InvokeVoidAsync("updateScene", (object)data);
+          await _Module.InvokeVoidAsync("updateScene", data);
           await Task.Delay(100);
         }
       }
@@ -64,58 +69,76 @@ namespace SimulationKernel.Pages
       }
     }
 
-    private void LoadFile(InputFileChangeEventArgs e)
+    private void LoadFiles(InputFileChangeEventArgs e)
     {
-      _UserFiles = e.GetMultipleFiles(maximumFileCount: 2);
-      _Uploaded = false;
-      _ProgressPercent = null;
+      int maximumFileCount = 50;
+      try
+      {
+        _UserFiles = e.GetMultipleFiles(maximumFileCount);
+        _Uploaded = false;
+        _ProgressPercent = null;
+      }
+      catch (InvalidOperationException exception)
+      {
+        Logger.LogWarning(exception, $"Cannot load more than {maximumFileCount} files.");
+      }
     }
 
     private async Task UploadFileAsync()
     {
       if (_UserFiles.Any())
       {
-        Status status = await UploadFile(_UserFiles.First());
-        if (status == Status.Succeded)
+        _DataFrames.Clear();
+        for (int index = 0; index < _UserFiles.Count; ++index)
         {
-          //Load the scene only if upload was successful
-          _Uploaded = true;
-          await LoadSceneAsync(_UserFiles);
-        }
-        else
-        {
-          _UploadMessage = "File upload failed";
+          try
+          {
+            var file = _UserFiles[index];
+
+            var fileInfo = new FileInfo(file.Name);
+            bool validFormat = fileInfo.Extension.Equals(_AllowedExtension, StringComparison.OrdinalIgnoreCase);
+
+            if (validFormat)
+            {
+              double weight = (double)index / _UserFiles.Count;
+              TransferStatus status = await UploadFile(file, weight);
+              if (status == TransferStatus.Succeded)
+              {
+                //Load the scene only if upload was successful
+                _Uploaded = true;
+                ObjectData data = await ProcessedDataService.ReadObjFileAsync(file.OpenReadStream(_MaxFileSize));
+                _DataFrames.Add(data);
+              }
+              else
+              {
+                _UploadMessage = "File upload failed";
+              }
+            }
+          }
+          catch (IOException exception)
+          {
+            _UploadMessage = $"Max file size is {_MaxFileSize} bytes";
+            Logger.LogError(exception, _UploadMessage);
+          }
+          catch (Exception exception)
+          {
+            _UploadMessage = "File upload failed";
+            Logger.LogError(exception, _UploadMessage);
+          }
         }
         _ProgressPercent = null;
       }
     }
 
-    private async Task<Status> UploadFile(IBrowserFile file)
+    private async Task<TransferStatus> UploadFile(IBrowserFile file, double fileWeight)
     {
-      var fileData = new FileData(file.OpenReadStream(), file.Name, file.Size);
-      Status result = await TransferDataService.UploadAsync(fileData, new Progress<uint>((percent) =>
+      using var fileData = new FileData(file.OpenReadStream(_MaxFileSize), file.Name, file.Size);
+      TransferStatus result = await TransferDataService.UploadAsync(fileData, new Progress<uint>((percent) =>
       {
-        _ProgressPercent = percent;
+        _ProgressPercent = (uint)(percent * fileWeight);
         StateHasChanged();
       }));
       return result;
-    }
-
-    private async Task LoadSceneAsync(IEnumerable<IBrowserFile> files)
-    {
-      List<Task<ObjectData>> list = files
-        .AsParallel()
-        .AsOrdered()
-        .Select(file =>
-          ProcessedDataService.ReadObjFileAsync(file.OpenReadStream()))
-        .ToList();
-
-      var results = await Task.WhenAll(list);
-
-      if (_Module != null && results.Any())
-      {
-        await _Module.InvokeVoidAsync("updateScene", results.First());
-      }
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()

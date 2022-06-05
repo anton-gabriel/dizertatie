@@ -1,20 +1,17 @@
 ﻿@using DomainModel.SimulationKernel
 @using SimulationKernel.Data
-@inject IJSRuntime _JS
-@implements IAsyncDisposable
 
 <div class="col-md-4">
   <div class="card mb-4 shadow-sm rounded-bottom">
-    <div @ref=_CanvasReference></div>
     <div class="card-body">
       <div class="d-flex flex-row align-items-center">
         <div class="icon"> <img src="icons/task_white_36dp.svg" /> </div>
         <div class="ms-2 c-details">
-          <span style="font-weight:bold;">@Data.Name</span><br/>
+          <span style="font-weight:bold;">@Data.Name</span><br />
           <span>@Data.CreationDate</span>
         </div>
       </div>
-      <div class="badge"> <span class="text-warning">@Data.Status</span> </div>
+      <span class="badge @StatusClass(Data.Status) mb-2">@Data.Status</span>
       <div class="d-flex justify-content-between align-items-center">
         <div class="btn-group">
           <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
@@ -26,29 +23,21 @@
 </div>
 
 @code {
-  private ElementReference _CanvasReference;
-  private IJSObjectReference? _Module;
-
   [Parameter]
   public SimulationMetadata Data { get; set; } = SimulationMetadata.Empty;
 
-  protected override async Task OnAfterRenderAsync(bool firstRender)
+  private string StatusClass(ProcessingStatus status)
   {
-    if (firstRender)
-    {
-      _Module = await _JS.InvokeAsync<IJSObjectReference>("import", "/js/scene_item.js");
-      if (_Module != null)
+      switch (status)
       {
-        await _Module.InvokeVoidAsync("renderInit", _CanvasReference);
+        case ProcessingStatus.NotStarted:
+          return "alert-secondary";
+        case ProcessingStatus.Processing:
+          return "alert-info";
+        case ProcessingStatus.Completed:
+          return "alert-success";
+        default:
+          return "alert-secondary";
       }
-    }
-  }
-
-  async ValueTask IAsyncDisposable.DisposeAsync()
-  {
-    if (_Module is not null)
-    {
-      await _Module.DisposeAsync();
-    }
   }
 }

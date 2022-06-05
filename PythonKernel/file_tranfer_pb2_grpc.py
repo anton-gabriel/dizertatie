@@ -19,13 +19,38 @@ class FileTransferStub(object):
                 request_serializer=file__tranfer__pb2.FileTransferRequest.SerializeToString,
                 response_deserializer=file__tranfer__pb2.FileTransferResponse.FromString,
                 )
+        self.Process = channel.unary_stream(
+                '/FileTransfer/Process',
+                request_serializer=file__tranfer__pb2.FileMetaData.SerializeToString,
+                response_deserializer=file__tranfer__pb2.ProcessingInfo.FromString,
+                )
+        self.Download = channel.unary_stream(
+                '/FileTransfer/Download',
+                request_serializer=file__tranfer__pb2.ProcessingMetaData.SerializeToString,
+                response_deserializer=file__tranfer__pb2.FileDownloadResponse.FromString,
+                )
 
 
 class FileTransferServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def Transfer(self, request_iterator, context):
-        """Missing associated documentation comment in .proto file."""
+        """Send the file to the server
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Process(self, request, context):
+        """Trigger the processing of the file
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Download(self, request, context):
+        """Get the processed results from the server
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -37,6 +62,16 @@ def add_FileTransferServicer_to_server(servicer, server):
                     servicer.Transfer,
                     request_deserializer=file__tranfer__pb2.FileTransferRequest.FromString,
                     response_serializer=file__tranfer__pb2.FileTransferResponse.SerializeToString,
+            ),
+            'Process': grpc.unary_stream_rpc_method_handler(
+                    servicer.Process,
+                    request_deserializer=file__tranfer__pb2.FileMetaData.FromString,
+                    response_serializer=file__tranfer__pb2.ProcessingInfo.SerializeToString,
+            ),
+            'Download': grpc.unary_stream_rpc_method_handler(
+                    servicer.Download,
+                    request_deserializer=file__tranfer__pb2.ProcessingMetaData.FromString,
+                    response_serializer=file__tranfer__pb2.FileDownloadResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -62,5 +97,39 @@ class FileTransfer(object):
         return grpc.experimental.stream_unary(request_iterator, target, '/FileTransfer/Transfer',
             file__tranfer__pb2.FileTransferRequest.SerializeToString,
             file__tranfer__pb2.FileTransferResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Process(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/FileTransfer/Process',
+            file__tranfer__pb2.FileMetaData.SerializeToString,
+            file__tranfer__pb2.ProcessingInfo.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Download(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/FileTransfer/Download',
+            file__tranfer__pb2.ProcessingMetaData.SerializeToString,
+            file__tranfer__pb2.FileDownloadResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
