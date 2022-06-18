@@ -1,4 +1,6 @@
-﻿<nav class="navbar navbar-expand-md navbar-toggleable-sm navbar-dark main-bg-color">
+﻿
+
+<nav class="navbar navbar-expand-md navbar-toggleable-sm navbar-dark main-bg-color">
   <div class="container-fluid">
     <a class="navbar-brand" href="">Simulation Kernel</a>
     <button class="navbar-toggler @NavButtonCssClass" type="button" aria-controls="navbarCollapse" aria-label="Toggle navigation" @onclick="ToggleNavMenu">
@@ -6,16 +8,20 @@
     </button>
     <div class="collapse navbar-collapse @NavBarCssClass" id="navbarCollapse">
       <ul class="navbar-nav me-auto mb-2 mb-md-0">
-        <li class="nav-item">
-          <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-            <img src="icons/build_white_24dp.svg" /> Process
-          </NavLink>
-        </li>
-        <li class="nav-item">
-          <NavLink class="nav-link" href="fetchdata">
-            <img src="icons/storage_white_24dp.svg" /> View data
-          </NavLink>
-        </li>
+        <AuthorizeView>
+          <Authorized>
+            <li class="nav-item">
+              <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <img src="icons/build_white_24dp.svg" /> Process
+              </NavLink>
+            </li>
+            <li class="nav-item">
+              <NavLink class="nav-link" href="fetchdata">
+                <img src="icons/storage_white_24dp.svg" /> View data
+              </NavLink>
+            </li>
+          </Authorized>
+        </AuthorizeView>
       </ul>
     </div>
     <div class="my-lg-0">
@@ -23,6 +29,7 @@
     </div>
   </div>
 </nav>
+
 
 
 @code {

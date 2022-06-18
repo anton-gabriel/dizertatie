@@ -16,7 +16,13 @@ builder.Services
   .AddEntityFrameworkStores<SimulationKernelContext>();
 
 // Add services to the container.
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages().AddRazorPagesOptions(options =>
+{
+  options.Conventions.AddAreaPageRoute("Identity", "/Account/Login", "Login");
+  options.Conventions.AddAreaPageRoute("Identity", "/Account/Register", "Register");
+  options.Conventions.AddAreaPageRoute("Identity", "/Account/Logout", "Logout");
+});
+
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<TokenProvider>();
 builder.Services.AddSingleton<ProcessedDataService>();
@@ -40,6 +46,7 @@ app.UseRouting();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+
 app.UseAuthentication();
 app.UseAuthorization();
 

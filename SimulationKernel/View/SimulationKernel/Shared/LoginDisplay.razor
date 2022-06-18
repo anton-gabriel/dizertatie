@@ -9,9 +9,9 @@
       <a class="link-light" style="text-decoration: none" href="Identity/Account/Manage/Index">
         @context.User.Identity?.Name
       </a>
-      <div style="margin-left:10px;" >
-        <form action="/Identity/Account/Logout?returnUrl=%2F" method="post">
-          <button class="btn btn-outline-light" type="submit">Logout</button>
+      <div style="margin-left:10px;">
+        <form action="/Logout?returnUrl=%2F" method="post">
+          <button class="btn btn-link text-light" type="submit">Logout</button>
           <input name="__RequestVerificationToken" type="hidden" value="@TokenProvider.XsrfToken">
         </form>
       </div>
@@ -19,7 +19,7 @@
     </div>
   </Authorized>
   <NotAuthorized>
-    <a class="link-light" style="text-decoration: none" href="Identity/Account/Register">Register</a>
-    <a class="link-light p-2 ml-2" style="text-decoration: none" href="Identity/Account/Login">Login</a>
+    <a class="link-light" style="text-decoration: none" href="/Register">Register</a>
+    <a class="link-light p-2 ml-2" style="text-decoration: none" href="/Login">Login</a>
   </NotAuthorized>
 </AuthorizeView>

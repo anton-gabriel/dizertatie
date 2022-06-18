@@ -143,11 +143,18 @@ namespace SimulationKernel.Pages
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-      if (_JSModule is not null)
+      try
       {
-        await _JSModule.DisposeAsync();
+        if (_JSModule is not null)
+        {
+          await _JSModule.DisposeAsync();
+        }
+        GC.SuppressFinalize(this);
       }
-      GC.SuppressFinalize(this);
+      catch (JSDisconnectedException)
+      {
+        System.Diagnostics.Debug.WriteLine("JavaScript runtime disconnected (SignalR disconnected).");
+      }
     }
   }
 }

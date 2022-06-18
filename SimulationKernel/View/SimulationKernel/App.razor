@@ -1,18 +1,24 @@
 ﻿@using SimulationKernel.Areas.Identity
 @inject TokenProvider TokenProvider
 
-<Router AppAssembly="@typeof(App).Assembly">
-  <Found Context="routeData">
-    <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-    <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-  </Found>
-  <NotFound>
-    <PageTitle>Not found</PageTitle>
-    <LayoutView Layout="@typeof(MainLayout)">
-      <p role="alert">Sorry, there's nothing at this address.</p>
-    </LayoutView>
-  </NotFound>
-</Router>
+<CascadingAuthenticationState>
+  <Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+      <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+      <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+      <PageTitle>Not found</PageTitle>
+      <LayoutView Layout="@typeof(MainLayout)">
+        <div class="card border m-5">
+          <div class="card-body text-center">
+            <span class="text-center">Sorry, there's nothing at this address.</span>
+          </div>
+        </div>
+      </LayoutView>
+    </NotFound>
+  </Router>
+</CascadingAuthenticationState>
 
 @code {
   [Parameter]
