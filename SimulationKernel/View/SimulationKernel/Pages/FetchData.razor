@@ -5,43 +5,51 @@
 @using DomainModel.SimulationKernel
 @using SimulationKernel.Data
 
+<AuthorizeView>
+  <Authorized>
 
-@if (Items == null)
-{
-  <p><em>Loading...</em></p>
-}
-else
-{
-  <div class="album py-5">
-    <div class="container">
-      <div class="row">
-        @foreach (var item in Items)
-        {
-          <SimulationItem Data="@item" JSStore="@_JSStore" />
-        }
-      </div>
-    </div>
-  </div>
-}
-
-<div class="m-5">
-
-  <div class="col-xl-12">
-    <div class="card shadow">
-      <div class="card-header">
-        <div class="btn-toolbar bg-light p-1" role="toolbar" aria-label="Toolbar with button groups">
-          <div class="btn-group mr-2" role="group" aria-label="First group">
-            <button type="button" class="btn btn-outline-secondary">Reset camera</button>
+    @if (Items == null)
+    {
+      <p><em>Loading...</em></p>
+    }
+    else
+    {
+      <div class="album py-5">
+        <div class="container">
+          <div class="row">
+            @foreach (var item in Items)
+            {
+              <SimulationItem Data="@item" JSStore="@_JSStore" />
+            }
           </div>
         </div>
       </div>
+    }
 
-      <input min=0 type="range" class="m-4 form-range" />
+    <div class="m-5">
 
-      <div @ref=_CanvasHostReference></div>
+      <div class="col-xl-12">
+        <div class="card shadow">
+          <div class="card-header">
+            <div class="btn-toolbar bg-light p-1" role="toolbar" aria-label="Toolbar with button groups">
+              <div class="btn-group mr-2" role="group" aria-label="First group">
+                <button type="button" class="btn btn-outline-secondary">Reset camera</button>
+              </div>
+            </div>
+          </div>
+
+          <input min=0 type="range" class="m-4 form-range" />
+
+          <div @ref=_CanvasHostReference></div>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
+  </Authorized>
+
+  <NotAuthorized>
+    <NotAuthorizedDisplay />
+  </NotAuthorized>
+</AuthorizeView>
 
 @code {
   private ElementReference _CanvasHostReference;
@@ -58,7 +66,7 @@ else
     if (firstRender)
     {
       var module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "/js/scene.js");
-      if (module != null)
+      if (module != null && _CanvasHostReference.Context != null)
       {
         _JSStore.Module = module;
         await _JSStore.Module.InvokeVoidAsync("renderScene", _CanvasHostReference);

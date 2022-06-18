@@ -3,9 +3,10 @@ using SimulationKernel.Data;
 using Microsoft.EntityFrameworkCore;
 using DataMapper.SimulationKernel.Context;
 using DomainModel.SimulationKernel;
+using SimulationKernel.Areas.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
-var connectionString = builder.Configuration.GetConnectionString("SimulationKernelContextConnection");
+var connectionString = builder.Configuration.GetConnectionString("sqlServer");
 
 builder.Services.AddDbContext<SimulationKernelContext>(options =>
   options.UseSqlServer(connectionString));
@@ -17,6 +18,7 @@ builder.Services
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddScoped<TokenProvider>();
 builder.Services.AddSingleton<ProcessedDataService>();
 builder.Services.AddSingleton<ITransferDataService, TransferDataService>();
 
@@ -39,5 +41,6 @@ app.UseRouting();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 app.UseAuthentication();
+app.UseAuthorization();
 
 app.Run();

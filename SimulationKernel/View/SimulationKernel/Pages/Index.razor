@@ -4,65 +4,76 @@
 @using SimulationKernel.Data
 @using System.ComponentModel.DataAnnotations
 
+
 <PageTitle>Process data</PageTitle>
 
-<div class="m-5">
+<AuthorizeView>
+  <Authorized>
 
-  <div class="col-xl-12">
-    <div class="card shadow">
-      <div class="card-header">
-        <h4>Process data</h4>
-      </div>
-      <div class="card-body">
-        <div class="input-group">
-          <InputFile OnChange="@LoadFiles" class="form-control" type="file" accept=".obj" id="fileUpload" multiple />
-          <div class="input-group-append">
-            <button @onclick="UploadFilesAsync" disabled="@(!_UserFiles.Any())" class="btn btn-outline-secondary rounded-0" type="button">Upload</button>
+    <div class="m-5">
+
+      <div class="col-xl-12">
+        <div class="card shadow">
+          <div class="card-header">
+            <h4>Process data</h4>
           </div>
-          <div class="input-group-append">
-            <button @onclick="Process" disabled="@(!_Uploaded)" class="btn btn-outline-secondary border-radius-right-only" type="button">Start processing</button>
-          </div>
-        </div>
+          <div class="card-body">
+            <div class="input-group">
+              <InputFile OnChange="@LoadFiles" class="form-control" type="file" accept=".obj" id="fileUpload" multiple />
+              <div class="input-group-append">
+                <button @onclick="UploadFilesAsync" disabled="@(!_UserFiles.Any())" class="btn btn-outline-secondary rounded-0" type="button">Upload</button>
+              </div>
+              <div class="input-group-append">
+                <button @onclick="Process" disabled="@(!_Uploaded)" class="btn btn-outline-secondary border-radius-right-only" type="button">Start processing</button>
+              </div>
+            </div>
 
-        @if (@_UploadMessage is not null)
-        {
-          <div class="alert alert-warning p-1 mt-2" for="fileUpload">
-            @_UploadMessage
-          </div>
-        }
+            @if (@_UploadMessage is not null)
+            {
+              <div class="alert alert-warning p-1 mt-2" for="fileUpload">
+                @_UploadMessage
+              </div>
+            }
 
-        @if (@_ProgressPercent.HasValue)
-        {
-          <div class="progress mt-1">
-            <div class="progress-bar bg-info" role="progressbar" aria-valuenow="@_ProgressPercent.Value" aria-valuemin="0" aria-valuemax="100" style="width:@_ProgressPercent.Value%"></div>
-          </div>
-        }
+            @if (@_ProgressPercent.HasValue)
+            {
+              <div class="progress mt-1">
+                <div class="progress-bar bg-info" role="progressbar" aria-valuenow="@_ProgressPercent.Value" aria-valuemin="0" aria-valuemax="100" style="width:@_ProgressPercent.Value%"></div>
+              </div>
+            }
 
-      </div>
-    </div>
-  </div>
-
-  <div class="col-xl-12  mt-5">
-    <div class="card shadow">
-      <div class="card-header">
-        <div class="btn-toolbar bg-light p-1" role="toolbar" aria-label="Toolbar with button groups">
-          <div class="btn-group mr-2" role="group" aria-label="First group">
-            <button @onclick="ResetCamera" type="button" class="btn btn-outline-secondary">Reset camera</button>
           </div>
         </div>
       </div>
 
-      <input @oninput="@UpdateFrame"
-             min=0
-             max=@_DataFrames.Count
-             disabled="@(!_DataFrames.Any())"
-             type="range" class="m-4 form-range" />
+      <div class="col-xl-12  mt-5">
+        <div class="card shadow">
+          <div class="card-header">
+            <div class="btn-toolbar bg-light p-1" role="toolbar" aria-label="Toolbar with button groups">
+              <div class="btn-group mr-2" role="group" aria-label="First group">
+                <button @onclick="ResetCamera" type="button" class="btn btn-outline-secondary">Reset camera</button>
+              </div>
+            </div>
+          </div>
 
-      <div @ref=_CanvasHostReference></div>
+          <input @oninput="@UpdateFrame"
+                 min=0
+                 max=@_DataFrames.Count
+                 disabled="@(!_DataFrames.Any())"
+                 type="range" class="m-4 form-range" />
+
+          <div @ref=_CanvasHostReference></div>
+        </div>
+      </div>
+
     </div>
-  </div>
+  </Authorized>
 
-</div>
+  <NotAuthorized>
+    <NotAuthorizedDisplay />
+  </NotAuthorized>
+</AuthorizeView>
+
 
 @code {
   private async Task UpdateFrame(ChangeEventArgs e)

@@ -37,7 +37,7 @@ namespace SimulationKernel.Pages
       if (firstRender)
       {
         _JSModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "/js/scene.js");
-        if (_JSModule != null)
+        if (_JSModule != null && _CanvasHostReference.Context != null)
         {
           await _JSModule.InvokeVoidAsync("renderScene", _CanvasHostReference);
         }

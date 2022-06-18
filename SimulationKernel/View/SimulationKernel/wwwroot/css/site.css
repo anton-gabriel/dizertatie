@@ -83,3 +83,7 @@ a, .btn-link {
   width: auto;
   height: auto;
 }
+
+.form-floating {
+  margin-top: 5px;
+}

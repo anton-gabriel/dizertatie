@@ -37,7 +37,7 @@
 
       var connectionString = config.GetConnectionString("sqlServer");
       optionsBuilder
-        .UseSqlServer(connectionString, options => options.MigrationsAssembly(nameof(DataMapper)))
+        .UseSqlServer(connectionString, options => options.MigrationsAssembly("DataMapper.SimulationKernel"))
         .UseLazyLoadingProxies();
     }
   }
