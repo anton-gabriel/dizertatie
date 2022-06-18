@@ -17,7 +17,7 @@
         <div class="input-group">
           <InputFile OnChange="@LoadFiles" class="form-control" type="file" accept=".obj" id="fileUpload" multiple />
           <div class="input-group-append">
-            <button @onclick="UploadFileAsync" disabled="@(!_UserFiles.Any())" class="btn btn-outline-secondary rounded-0" type="button">Upload</button>
+            <button @onclick="UploadFilesAsync" disabled="@(!_UserFiles.Any())" class="btn btn-outline-secondary rounded-0" type="button">Upload</button>
           </div>
           <div class="input-group-append">
             <button @onclick="Process" disabled="@(!_Uploaded)" class="btn btn-outline-secondary border-radius-right-only" type="button">Start processing</button>
@@ -58,7 +58,7 @@
              disabled="@(!_DataFrames.Any())"
              type="range" class="m-4 form-range" />
 
-      <div @ref=CanvasHostReference></div>
+      <div @ref=_CanvasHostReference></div>
     </div>
   </div>
 
@@ -69,10 +69,9 @@
   {
     int frame = Convert.ToInt32(e.Value);
 
-    if (_Module != null && frame < _DataFrames.Count)
+    if (_JSModule != null && frame < _DataFrames.Count)
     {
-      await _Module.InvokeVoidAsync("updateScene", _DataFrames[frame]);
+      await _JSModule.InvokeVoidAsync("updateScene", _DataFrames[frame]);
     }
   }
-
 }

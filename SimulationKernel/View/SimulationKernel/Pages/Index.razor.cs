@@ -14,8 +14,8 @@ namespace SimulationKernel.Pages
   public partial class Index : ComponentBase, IAsyncDisposable
   {
     private static readonly string _AllowedExtension = ".obj";
-    ElementReference CanvasHostReference;
-    private IJSObjectReference? _Module;
+    private ElementReference _CanvasHostReference;
+    private IJSObjectReference? _JSModule;
     private uint? _ProgressPercent;
     private string? _UploadMessage;
     private IReadOnlyList<IBrowserFile> _UserFiles = new List<IBrowserFile>();
@@ -36,10 +36,10 @@ namespace SimulationKernel.Pages
     {
       if (firstRender)
       {
-        _Module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "/js/scene.js");
-        if (_Module != null)
+        _JSModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "/js/scene.js");
+        if (_JSModule != null)
         {
-          await _Module.InvokeVoidAsync("renderScene", CanvasHostReference);
+          await _JSModule.InvokeVoidAsync("renderScene", _CanvasHostReference);
         }
       }
 
@@ -53,9 +53,9 @@ namespace SimulationKernel.Pages
       foreach (string file in files)
       {
         ObjectData data = ProcessedDataService.ReadObjFile(file);
-        if (_Module != null)
+        if (_JSModule != null)
         {
-          await _Module.InvokeVoidAsync("updateScene", data);
+          await _JSModule.InvokeVoidAsync("updateScene", data);
           await Task.Delay(100);
         }
       }
@@ -63,9 +63,9 @@ namespace SimulationKernel.Pages
 
     private async Task ResetCamera()
     {
-      if (_Module != null)
+      if (_JSModule != null)
       {
-        await _Module.InvokeVoidAsync("resetCamera");
+        await _JSModule.InvokeVoidAsync("resetCamera");
       }
     }
 
@@ -84,7 +84,7 @@ namespace SimulationKernel.Pages
       }
     }
 
-    private async Task UploadFileAsync()
+    private async Task UploadFilesAsync()
     {
       if (_UserFiles.Any())
       {
@@ -143,9 +143,9 @@ namespace SimulationKernel.Pages
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-      if (_Module is not null)
+      if (_JSModule is not null)
       {
-        await _Module.DisposeAsync();
+        await _JSModule.DisposeAsync();
       }
       GC.SuppressFinalize(this);
     }

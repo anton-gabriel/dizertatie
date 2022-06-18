@@ -91,19 +91,29 @@
           DataLocation = location
         });
 
-        string downloadLocation = Path.Combine("downloaded", Path.GetFileNameWithoutExtension(location), DateTime.Now.ToString("yyyyMMddHHmmssffff"));
-        await using var writeStream = System.IO.File.Create(Path.ChangeExtension(downloadLocation, _FileExtension));
+        string downloadLocation = Path.Combine("downloaded", Path.GetFileName(location));
+        Directory.CreateDirectory(downloadLocation);
+
+        FileStream writeStream = null;
 
         await foreach (FileDownloadResponse response in call.ResponseStream.ReadAllAsync())
         {
           switch (response.ResponseCase)
           {
             case FileDownloadResponse.ResponseOneofCase.Metadata:
-              string fileName = Path.ChangeExtension(response.Metadata.Name, response.Metadata.Extension);
+              {
+                string fileName = Path.ChangeExtension(response.Metadata.Name, response.Metadata.Extension);
+                string filePath = Path.Combine(downloadLocation, fileName);
+                writeStream?.Close();
+                writeStream = new FileStream(filePath, FileMode.Create);
+              }
               break;
             case FileDownloadResponse.ResponseOneofCase.File:
-              var bytes = response.File.Chunk.Memory;
-              await writeStream.WriteAsync(bytes);
+              if (writeStream != null)
+              {
+                var bytes = response.File.Chunk.Memory;
+                await writeStream.WriteAsync(bytes);
+              }
               break;
             default:
               break;
@@ -111,7 +121,9 @@
 
           status = response.Status;
           progress.Report(response.Progress);
+          System.Diagnostics.Debug.WriteLine($"progress: {response.Progress}");
         }
+        writeStream?.Close();
       }
       catch (Exception ex)
       {

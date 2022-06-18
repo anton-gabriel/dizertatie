@@ -17,27 +17,68 @@ else
       <div class="row">
         @foreach (var item in Items)
         {
-          <SimulationItem Data="@item" />
+          <SimulationItem Data="@item" JSStore="@_JSStore" />
         }
       </div>
     </div>
   </div>
 }
 
+<div class="m-5">
+
+  <div class="col-xl-12">
+    <div class="card shadow">
+      <div class="card-header">
+        <div class="btn-toolbar bg-light p-1" role="toolbar" aria-label="Toolbar with button groups">
+          <div class="btn-group mr-2" role="group" aria-label="First group">
+            <button type="button" class="btn btn-outline-secondary">Reset camera</button>
+          </div>
+        </div>
+      </div>
+
+      <input min=0 type="range" class="m-4 form-range" />
+
+      <div @ref=_CanvasHostReference></div>
+    </div>
+  </div>
+</div>
+
 @code {
+  private ElementReference _CanvasHostReference;
+  private SimulationItem.JSModuleStore _JSStore = new SimulationItem.JSModuleStore();
   private IEnumerable<SimulationMetadata>? Items;
+
+  [Inject]
+  private IJSRuntime JSRuntime { get; set; } = default!;
+  [Inject]
+  private ILogger<FetchData> Logger { get; set; } = default!;
+
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    if (firstRender)
+    {
+      var module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "/js/scene.js");
+      if (module != null)
+      {
+        _JSStore.Module = module;
+        await _JSStore.Module.InvokeVoidAsync("renderScene", _CanvasHostReference);
+      }
+    }
+    await base.OnAfterRenderAsync(firstRender);
+  }
 
   protected override async Task OnInitializedAsync()
   {
     await base.OnInitializedAsync();
-    Items = Enumerable.Range(0, 3).Select(index =>
+    Items = Enumerable.Range(1, 3).Select(index =>
     {
       return new SimulationMetadata()
         {
-          Name = $"Test_{index}",
-          Status = (ProcessingStatus) (index % 3),
-          CreationDate = DateTime.Now,
-          Duration = TimeSpan.FromMinutes(index)
+          Name = $"Processing_{DateTime.Now.AddDays(-10).ToString("MMddyyyy")}",
+          Status = (ProcessingStatus)(index % 2 + 1),
+          CreationDate = DateTime.Now.AddDays(-10),
+          Duration = TimeSpan.FromMinutes(index),
+          DataLocation = @$"D:\Repo\GitHub\disertatie\Simulator\Data\out_blender",
         };
     });
   }
