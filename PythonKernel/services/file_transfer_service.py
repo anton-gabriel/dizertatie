@@ -69,7 +69,10 @@ class FileTransferService(file_tranfer_pb2_grpc.FileTransferServicer):
                     file_name = f'{request.metadata.name}.{request.metadata.extension}'
                     # replace dots repetitions with a single dot
                     file_name = re.sub(r'\.+', '.', file_name)
-                    writer = open(file_name, "ab")
+                    # create destination directory if not exists
+                    Path(request.metadata.destination).mkdir(parents=True, exist_ok=True)
+                    destination = Path(f'{request.metadata.destination}/{file_name}')
+                    writer = open(destination, "ab")
                     print(f"Created file: {file_name}")
 
                 elif request.HasField("file"):

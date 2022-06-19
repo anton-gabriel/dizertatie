@@ -17,6 +17,7 @@ message File {
 message FileMetaData {
   string name = 1;
   string extension = 2;
+  string destination = 3;
 }
 
 message FileTransferRequest {

@@ -15,7 +15,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x12\x66ile_tranfer.proto\"\x15\n\x04\x46ile\x12\r\n\x05\x63hunk\x18\x01 \x01(\x0c\"/\n\x0c\x46ileMetaData\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x11\n\textension\x18\x02 \x01(\t\"Z\n\x13\x46ileTransferRequest\x12!\n\x08metadata\x18\x01 \x01(\x0b\x32\r.FileMetaDataH\x00\x12\x15\n\x04\x66ile\x18\x02 \x01(\x0b\x32\x05.FileH\x00\x42\t\n\x07request\"7\n\x14\x46ileTransferResponse\x12\x1f\n\x06status\x18\x01 \x01(\x0e\x32\x0f.TransferStatus\"\x8f\x01\n\x14\x46ileDownloadResponse\x12!\n\x08metadata\x18\x01 \x01(\x0b\x32\r.FileMetaDataH\x00\x12\x15\n\x04\x66ile\x18\x02 \x01(\x0b\x32\x05.FileH\x00\x12\x10\n\x08progress\x18\x03 \x01(\r\x12\x1f\n\x06status\x18\x04 \x01(\x0e\x32\x0f.TransferStatusB\n\n\x08response\"Z\n\x0eProcessingInfo\x12!\n\x06status\x18\x01 \x01(\x0e\x32\x11.ProcessingStatus\x12%\n\x08metadata\x18\x02 \x01(\x0b\x32\x13.ProcessingMetaData\"+\n\x12ProcessingMetaData\x12\x15\n\rdata_location\x18\x01 \x01(\t*E\n\x0eTransferStatus\x12\x0b\n\x07Pending\x10\x00\x12\x0c\n\x08Progress\x10\x01\x12\x0c\n\x08Succeded\x10\x02\x12\n\n\x06\x46\x61iled\x10\x03*A\n\x10ProcessingStatus\x12\x0e\n\nNotStarted\x10\x00\x12\x0e\n\nProcessing\x10\x01\x12\r\n\tProcessed\x10\x02\x32\xb0\x01\n\x0c\x46ileTransfer\x12\x39\n\x08Transfer\x12\x14.FileTransferRequest\x1a\x15.FileTransferResponse(\x01\x12+\n\x07Process\x12\r.FileMetaData\x1a\x0f.ProcessingInfo0\x01\x12\x38\n\x08\x44ownload\x12\x13.ProcessingMetaData\x1a\x15.FileDownloadResponse0\x01\x42\x0c\xaa\x02\tGeneratedb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x12\x66ile_tranfer.proto\"\x15\n\x04\x46ile\x12\r\n\x05\x63hunk\x18\x01 \x01(\x0c\"D\n\x0c\x46ileMetaData\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x11\n\textension\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65stination\x18\x03 \x01(\t\"Z\n\x13\x46ileTransferRequest\x12!\n\x08metadata\x18\x01 \x01(\x0b\x32\r.FileMetaDataH\x00\x12\x15\n\x04\x66ile\x18\x02 \x01(\x0b\x32\x05.FileH\x00\x42\t\n\x07request\"7\n\x14\x46ileTransferResponse\x12\x1f\n\x06status\x18\x01 \x01(\x0e\x32\x0f.TransferStatus\"\x8f\x01\n\x14\x46ileDownloadResponse\x12!\n\x08metadata\x18\x01 \x01(\x0b\x32\r.FileMetaDataH\x00\x12\x15\n\x04\x66ile\x18\x02 \x01(\x0b\x32\x05.FileH\x00\x12\x10\n\x08progress\x18\x03 \x01(\r\x12\x1f\n\x06status\x18\x04 \x01(\x0e\x32\x0f.TransferStatusB\n\n\x08response\"Z\n\x0eProcessingInfo\x12!\n\x06status\x18\x01 \x01(\x0e\x32\x11.ProcessingStatus\x12%\n\x08metadata\x18\x02 \x01(\x0b\x32\x13.ProcessingMetaData\"+\n\x12ProcessingMetaData\x12\x15\n\rdata_location\x18\x01 \x01(\t*E\n\x0eTransferStatus\x12\x0b\n\x07Pending\x10\x00\x12\x0c\n\x08Progress\x10\x01\x12\x0c\n\x08Succeded\x10\x02\x12\n\n\x06\x46\x61iled\x10\x03*A\n\x10ProcessingStatus\x12\x0e\n\nNotStarted\x10\x00\x12\x0e\n\nProcessing\x10\x01\x12\r\n\tProcessed\x10\x02\x32\xb0\x01\n\x0c\x46ileTransfer\x12\x39\n\x08Transfer\x12\x14.FileTransferRequest\x1a\x15.FileTransferResponse(\x01\x12+\n\x07Process\x12\r.FileMetaData\x1a\x0f.ProcessingInfo0\x01\x12\x38\n\x08\x44ownload\x12\x13.ProcessingMetaData\x1a\x15.FileDownloadResponse0\x01\x42\x0c\xaa\x02\tGeneratedb\x06proto3')
 
 _TRANSFERSTATUS = DESCRIPTOR.enum_types_by_name['TransferStatus']
 TransferStatus = enum_type_wrapper.EnumTypeWrapper(_TRANSFERSTATUS)
@@ -91,24 +91,24 @@ if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   DESCRIPTOR._serialized_options = b'\252\002\tGenerated'
-  _TRANSFERSTATUS._serialized_start=526
-  _TRANSFERSTATUS._serialized_end=595
-  _PROCESSINGSTATUS._serialized_start=597
-  _PROCESSINGSTATUS._serialized_end=662
+  _TRANSFERSTATUS._serialized_start=547
+  _TRANSFERSTATUS._serialized_end=616
+  _PROCESSINGSTATUS._serialized_start=618
+  _PROCESSINGSTATUS._serialized_end=683
   _FILE._serialized_start=22
   _FILE._serialized_end=43
   _FILEMETADATA._serialized_start=45
-  _FILEMETADATA._serialized_end=92
-  _FILETRANSFERREQUEST._serialized_start=94
-  _FILETRANSFERREQUEST._serialized_end=184
-  _FILETRANSFERRESPONSE._serialized_start=186
-  _FILETRANSFERRESPONSE._serialized_end=241
-  _FILEDOWNLOADRESPONSE._serialized_start=244
-  _FILEDOWNLOADRESPONSE._serialized_end=387
-  _PROCESSINGINFO._serialized_start=389
-  _PROCESSINGINFO._serialized_end=479
-  _PROCESSINGMETADATA._serialized_start=481
-  _PROCESSINGMETADATA._serialized_end=524
-  _FILETRANSFER._serialized_start=665
-  _FILETRANSFER._serialized_end=841
+  _FILEMETADATA._serialized_end=113
+  _FILETRANSFERREQUEST._serialized_start=115
+  _FILETRANSFERREQUEST._serialized_end=205
+  _FILETRANSFERRESPONSE._serialized_start=207
+  _FILETRANSFERRESPONSE._serialized_end=262
+  _FILEDOWNLOADRESPONSE._serialized_start=265
+  _FILEDOWNLOADRESPONSE._serialized_end=408
+  _PROCESSINGINFO._serialized_start=410
+  _PROCESSINGINFO._serialized_end=500
+  _PROCESSINGMETADATA._serialized_start=502
+  _PROCESSINGMETADATA._serialized_end=545
+  _FILETRANSFER._serialized_start=686
+  _FILETRANSFER._serialized_end=862
 # @@protoc_insertion_point(module_scope)

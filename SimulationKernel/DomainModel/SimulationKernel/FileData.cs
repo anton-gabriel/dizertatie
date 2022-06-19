@@ -1,6 +1,6 @@
 ﻿namespace DomainModel.SimulationKernel
 {
-  public record FileData(Stream ReadStream, string Name, long Size) : IDisposable
+  public record FileData(Stream ReadStream, string Name, long Size, string Destination) : IDisposable
   {
     private bool _DisposedValue;
 

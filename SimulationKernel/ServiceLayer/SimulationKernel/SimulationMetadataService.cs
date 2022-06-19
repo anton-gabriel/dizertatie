@@ -35,6 +35,9 @@
 
       if (user != null)
       {
+        string processingName = $"Processing_{DateTime.Now:MMddyyyy}";
+        string destination = Path.Combine(AppOpptions.DestinationDataDirectoryName, userName, processingName);
+        
         for (int index = 0; index < files.Count; ++index)
         {
           try
@@ -47,7 +50,7 @@
             if (validFormat)
             {
               double weight = (double)index / files.Count;
-              Generated.TransferStatus status = await UploadFile(file, weight, progress);
+              Generated.TransferStatus status = await UploadFile(file, weight, destination, progress);
               if (status != Generated.TransferStatus.Succeded)
               {
                 message = $"Cannot upload '{file.Name}' file.";
@@ -70,9 +73,9 @@
         var simulation = new SimulationMetadata()
         {
           CreationDate = DateTime.Now,
-          Name = $"Processing_{DateTime.Now:MMddyyyy}",
+          Name = processingName,
           Status = ProcessingStatus.NotStarted,
-          InputDataLocation = "test",
+          InputDataLocation = destination,
         };
 
         result = _Validator.Validate(simulation);
@@ -86,9 +89,9 @@
     }
 
 
-    private async Task<Generated.TransferStatus> UploadFile(IBrowserFile file, double fileWeight, IProgress<uint> progress)
+    private async Task<Generated.TransferStatus> UploadFile(IBrowserFile file, double fileWeight, string destination, IProgress<uint> progress)
     {
-      using var fileData = new FileData(file.OpenReadStream(AppOpptions.MaxFileSize), file.Name, file.Size);
+      using var fileData = new FileData(file.OpenReadStream(AppOpptions.MaxFileSize), file.Name, file.Size, destination);
       Generated.TransferStatus result = await _TransferDataService.UploadAsync(fileData, new Progress<uint>((percent) =>
       {
         //Report weighted progress (relative to all files)

@@ -31,7 +31,7 @@
       try
       {
         using var transfer = _Client.Transfer();
-        await SendMetadata(transfer, file.Name);
+        await SendMetadata(transfer, file.Name, file.Destination);
 
         int bytesRead = 0, totalRead = 0;
 
@@ -67,14 +67,15 @@
       });
     }
 
-    private static Task SendMetadata(AsyncClientStreamingCall<FileTransferRequest, FileTransferResponse> transfer, string name)
+    private static Task SendMetadata(AsyncClientStreamingCall<FileTransferRequest, FileTransferResponse> transfer, string name, string destination)
     {
       return transfer.RequestStream.WriteAsync(new FileTransferRequest()
       {
         Metadata = new FileMetaData()
         {
           Name = Path.GetFileNameWithoutExtension(name),
-          Extension = _FileExtension
+          Extension = _FileExtension,
+          Destination = destination
         }
       });
     }
