@@ -26,8 +26,6 @@ namespace SimulationKernel.Pages
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
     [Inject]
-    private ITransferDataService TransferDataService { get; set; } = default!;
-    [Inject]
     private ISimulationMetadataService SimulationService { get; set; } = default!;
     [Inject]
     private ProcessedDataService ProcessedDataService { get; set; } = default!;

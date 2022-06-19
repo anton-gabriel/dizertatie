@@ -35,9 +35,9 @@
 
       if (user != null)
       {
-        string processingName = $"Processing_{DateTime.Now:MMddyyyy}";
+        string processingName = $"Processing_{DateTime.Now:MMddyyyyssffffff}";
         string destination = Path.Combine(AppOpptions.DestinationDataDirectoryName, userName, processingName);
-        
+
         for (int index = 0; index < files.Count; ++index)
         {
           try
@@ -88,6 +88,15 @@
       return result;
     }
 
+    public IEnumerable<SimulationMetadata> GetUserProcessings(string userName, int limit)
+    {
+      var user = _UserRepository.SingleOrDefault(
+        user => user.UserName == userName,
+        user => user.Simulations.Take(limit)
+     );
+
+      return user != null ? user.Simulations : Enumerable.Empty<SimulationMetadata>();
+    }
 
     private async Task<Generated.TransferStatus> UploadFile(IBrowserFile file, double fileWeight, string destination, IProgress<uint> progress)
     {

@@ -3,6 +3,7 @@
 <PageTitle>Items</PageTitle>
 
 @using DomainModel.SimulationKernel
+@using ServiceLayer.SimulationKernel
 @using SimulationKernel.Data
 
 <AuthorizeView>
@@ -70,6 +71,11 @@
   private IJSRuntime JSRuntime { get; set; } = default!;
   [Inject]
   private ILogger<FetchData> Logger { get; set; } = default!;
+  [Inject]
+  private ISimulationMetadataService SimulationService { get; set; } = default!;
+
+  [CascadingParameter]
+  public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
   protected override async Task OnAfterRenderAsync(bool firstRender)
   {
@@ -88,16 +94,13 @@
   protected override async Task OnInitializedAsync()
   {
     await base.OnInitializedAsync();
-    Items = Enumerable.Range(1, 3).Select(index =>
+
+    var authState = await AuthenticationStateTask;
+    var user = authState.User;
+    if (user.Identity != null && user.Identity.IsAuthenticated)
     {
-      return new SimulationMetadata()
-        {
-          Name = $"Processing_{DateTime.Now.AddDays(-10):MMddyyyy}",
-          Status = (ProcessingStatus)(index % 2 + 1),
-          CreationDate = DateTime.Now.AddDays(-10),
-          Duration = TimeSpan.FromMinutes(index),
-          InputDataLocation = @$"D:\Repo\GitHub\disertatie\Simulator\Data\out_blender",
-        };
-    });
+      var userName = user.Identity.Name;
+      Items = SimulationService.GetUserProcessings(userName, limit: 3);
+    }
   }
 }

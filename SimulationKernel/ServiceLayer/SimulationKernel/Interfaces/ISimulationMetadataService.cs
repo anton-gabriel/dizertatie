@@ -10,5 +10,7 @@
       string userName,
       IReadOnlyList<IBrowserFile> files,
       IProgress<uint> progress);
+
+    IEnumerable<SimulationMetadata> GetUserProcessings(string userName, int limit);
   }
 }
