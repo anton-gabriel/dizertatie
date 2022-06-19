@@ -72,6 +72,6 @@
     /// Updates the specified entity.
     /// </summary>
     /// <param name="entity">The entity.</param>
-    void Update(T entity);
+    void Update(T entity, Action<T> updateMethod = null);
   }
 }

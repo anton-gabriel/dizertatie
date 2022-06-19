@@ -15,10 +15,10 @@
         .WithMessage(Resources.AlphanumericRequired);
 
       RuleFor(metadata => metadata.CreationDate)
-        .LessThanOrEqualTo(DateTime.Now)
+        .LessThanOrEqualTo(DateTime.Now.AddDays(1))
         .GreaterThanOrEqualTo(new DateTime(2022, 1, 1));
 
-      RuleFor(metadata => metadata.DataLocation)
+      RuleFor(metadata => metadata.InputDataLocation)
         .NotEmpty();
     }
   }

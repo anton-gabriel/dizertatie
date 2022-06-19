@@ -291,7 +291,7 @@
     /// <param name="entity">The entity.</param>
     /// <exception cref="ArgumentNullException">When <paramref name="entity"/> is null.</exception>
     /// <exception cref="Library.DataMapper.Repository.RepositoryException">When the operation cannot be executed.</exception>
-    public virtual void Update(T entity)
+    public virtual void Update(T entity, Action<T> updateMethod = null)
     {
       if (entity is null)
       {
@@ -303,6 +303,7 @@
         using var context = this.ContextFactory.CreateDbContext();
         var set = context.Set<T>();
         set.Attach(entity);
+        updateMethod?.Invoke(entity);
         context.ModifyState(entity, EntityState.Modified);
         context.SaveChanges();
       }

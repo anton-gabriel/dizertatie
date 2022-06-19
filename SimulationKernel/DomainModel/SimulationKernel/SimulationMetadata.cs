@@ -4,7 +4,8 @@
   {
     public int Id { get; private set; }
     public string Name { get; set; }
-    public string DataLocation { get; set; }
+    public string InputDataLocation { get; set; }
+    public string OutputDataLocation { get; set; }
     public ProcessingStatus Status { get; set; }
     public DateTime CreationDate { get; set; }
     public TimeSpan? Duration { get; set; }

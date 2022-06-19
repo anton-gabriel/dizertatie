@@ -7,28 +7,38 @@
 
 <AuthorizeView>
   <Authorized>
+    <div class="m-5">
+      <div class="col-xl-12">
+        <div class="card shadow">
+          <div class="card-header">
+            <h4>Processings</h4>
+          </div>
+          <div class="card-body">
 
-    @if (Items == null)
-    {
-      <p><em>Loading...</em></p>
-    }
-    else
-    {
-      <div class="album py-5">
-        <div class="container">
-          <div class="row">
-            @foreach (var item in Items)
+            @if (Items == null)
             {
-              <SimulationItem Data="@item" JSStore="@_JSStore" />
+              <p><em>Loading...</em></p>
             }
+            else
+            {
+              <div class="album">
+                <div class="container">
+                  <div class="row">
+                    @foreach (var item in Items)
+                    {
+                      <SimulationItem Data="@item" JSStore="@_JSStore" />
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+
           </div>
         </div>
       </div>
-    }
 
-    <div class="m-5">
 
-      <div class="col-xl-12">
+      <div class="col-xl-12 mt-5">
         <div class="card shadow">
           <div class="card-header">
             <div class="btn-toolbar bg-light p-1" role="toolbar" aria-label="Toolbar with button groups">
@@ -82,11 +92,11 @@
     {
       return new SimulationMetadata()
         {
-          Name = $"Processing_{DateTime.Now.AddDays(-10).ToString("MMddyyyy")}",
+          Name = $"Processing_{DateTime.Now.AddDays(-10):MMddyyyy}",
           Status = (ProcessingStatus)(index % 2 + 1),
           CreationDate = DateTime.Now.AddDays(-10),
           Duration = TimeSpan.FromMinutes(index),
-          DataLocation = @$"D:\Repo\GitHub\disertatie\Simulator\Data\out_blender",
+          InputDataLocation = @$"D:\Repo\GitHub\disertatie\Simulator\Data\out_blender",
         };
     });
   }

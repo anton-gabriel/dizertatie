@@ -68,7 +68,7 @@
   {
     _ProgressPercent = 0;
     Generated.TransferStatus result = await TransferDataService
-      .DownloadAsync(Data.DataLocation, new Progress<uint>((percent) =>
+      .DownloadAsync(Data.InputDataLocation, new Progress<uint>((percent) =>
       {
         _ProgressPercent = (uint)(percent);
         StateHasChanged();

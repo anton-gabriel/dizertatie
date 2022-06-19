@@ -1,18 +1,25 @@
-using ServiceLayer.SimulationKernel;
-using SimulationKernel.Data;
-using Microsoft.EntityFrameworkCore;
 using DataMapper.SimulationKernel.Context;
+using DataMapper.SimulationKernel.Repository;
 using DomainModel.SimulationKernel;
+using FluentValidation;
+using Microsoft.EntityFrameworkCore;
+using ServiceLayer.SimulationKernel;
+using ServiceLayer.SimulationKernel.Validators;
 using SimulationKernel.Areas.Identity;
+using SimulationKernel.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("sqlServer");
 
-builder.Services.AddDbContext<SimulationKernelContext>(options =>
-  options.UseSqlServer(connectionString));
+builder.Services.AddDbContextFactory<SimulationKernelContext>(options =>
+{
+  options
+    .UseLazyLoadingProxies()
+    .UseSqlServer(connectionString);
+});
 
 builder.Services
-  .AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
+  .AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = false)
   .AddEntityFrameworkStores<SimulationKernelContext>();
 
 // Add services to the container.
@@ -25,8 +32,18 @@ builder.Services.AddRazorPages().AddRazorPagesOptions(options =>
 
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<TokenProvider>();
+
+//Repositories
+builder.Services.AddSingleton<ISimulationMetadataRepository, SimulationMetadataRepository>();
+builder.Services.AddSingleton<IUserRepository, UserRepository>();
+
+//Validators
+builder.Services.AddSingleton<IValidator<SimulationMetadata>, SimulationMetadataValidator>();
+
+//Services
 builder.Services.AddSingleton<ProcessedDataService>();
 builder.Services.AddSingleton<ITransferDataService, TransferDataService>();
+builder.Services.AddSingleton<ISimulationMetadataService, SimulationMetadataService>();
 
 var app = builder.Build();
 

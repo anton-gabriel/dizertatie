@@ -350,3 +350,4 @@ MigrationBackup/
 .ionide/
 
 /PythonKernel/local
+/PythonKernel/checkpoint

@@ -1,6 +1,6 @@
 dotnet ef migrations add Initial --startup-project View\SimulationKernel --project DataMapper\SimulationKernel
 
-dotnet ef migrations add MigrationName --startup-project View\SimulationKernel --project DataMapper
+dotnet ef migrations add MigrationName --startup-project View\SimulationKernel --project DataMapper\SimulationKernel
 dotnet ef database update --startup-project View\SimulationKernel --project DataMapper\SimulationKernel
 
 dotnet ef migrations remove --startup-project View\SimulationKernel --project DataMapper\SimulationKernel

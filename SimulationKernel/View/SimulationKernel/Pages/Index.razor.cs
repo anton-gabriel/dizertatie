@@ -1,8 +1,8 @@
 namespace SimulationKernel.Pages
 {
   using DomainModel.SimulationKernel;
-  using Generated;
   using Microsoft.AspNetCore.Components;
+  using Microsoft.AspNetCore.Components.Authorization;
   using Microsoft.AspNetCore.Components.Forms;
   using Microsoft.JSInterop;
   using ServiceLayer.SimulationKernel;
@@ -13,7 +13,6 @@ namespace SimulationKernel.Pages
 
   public partial class Index : ComponentBase, IAsyncDisposable
   {
-    private static readonly string _AllowedExtension = ".obj";
     private ElementReference _CanvasHostReference;
     private IJSObjectReference? _JSModule;
     private uint? _ProgressPercent;
@@ -21,7 +20,6 @@ namespace SimulationKernel.Pages
     private IReadOnlyList<IBrowserFile> _UserFiles = new List<IBrowserFile>();
     private bool _Uploaded = false;
     private readonly List<ObjectData> _DataFrames = new();
-    private static readonly long _MaxFileSize = 10 * 1024 * 1024;//10 MB
 
     [Inject]
     private ILogger<Index> Logger { get; set; } = default!;
@@ -30,7 +28,13 @@ namespace SimulationKernel.Pages
     [Inject]
     private ITransferDataService TransferDataService { get; set; } = default!;
     [Inject]
+    private ISimulationMetadataService SimulationService { get; set; } = default!;
+    [Inject]
     private ProcessedDataService ProcessedDataService { get; set; } = default!;
+
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -48,16 +52,11 @@ namespace SimulationKernel.Pages
 
     private async Task Process()
     {
-      string filePath = Path.GetFullPath("out_blender");
-      string[] files = Directory.GetFiles(filePath, "*.obj").OrderBy(name => name).ToArray();
-      foreach (string file in files)
+      var authState = await AuthenticationStateTask;
+      var user = authState.User;
+      if (user.Identity != null && user.Identity.IsAuthenticated)
       {
-        ObjectData data = ProcessedDataService.ReadObjFile(file);
-        if (_JSModule != null)
-        {
-          await _JSModule.InvokeVoidAsync("updateScene", data);
-          await Task.Delay(100);
-        }
+        var userName = user.Identity.Name;
       }
     }
 
@@ -89,56 +88,36 @@ namespace SimulationKernel.Pages
       if (_UserFiles.Any())
       {
         _DataFrames.Clear();
-        for (int index = 0; index < _UserFiles.Count; ++index)
+        var authState = await AuthenticationStateTask;
+        var user = authState.User;
+        if (user.Identity != null && user.Identity.IsAuthenticated)
         {
-          try
+          var userName = user.Identity.Name;
+          
+          var result = await SimulationService.UploadUserDataAsync(userName, _UserFiles, new Progress<uint>((percent) =>
           {
-            var file = _UserFiles[index];
-
-            var fileInfo = new FileInfo(file.Name);
-            bool validFormat = fileInfo.Extension.Equals(_AllowedExtension, StringComparison.OrdinalIgnoreCase);
-
-            if (validFormat)
+            _ProgressPercent = percent;
+            StateHasChanged();
+          }));
+          if (result.IsValid)
+          {
+            _Uploaded = true;
+            _UploadMessage = "Uploaded successfully";
+            foreach (var file in _UserFiles)
             {
-              double weight = (double)index / _UserFiles.Count;
-              TransferStatus status = await UploadFile(file, weight);
-              if (status == TransferStatus.Succeded)
-              {
-                //Load the scene only if upload was successful
-                _Uploaded = true;
-                ObjectData data = await ProcessedDataService.ReadObjFileAsync(file.OpenReadStream(_MaxFileSize));
-                _DataFrames.Add(data);
-              }
-              else
-              {
-                _UploadMessage = "File upload failed";
-              }
+              ObjectData data = await ProcessedDataService.ReadObjFileAsync(file.OpenReadStream(AppOpptions.MaxFileSize));
+              _DataFrames.Add(data);
             }
           }
-          catch (IOException exception)
-          {
-            _UploadMessage = $"Max file size is {_MaxFileSize} bytes";
-            Logger.LogError(exception, _UploadMessage);
-          }
-          catch (Exception exception)
-          {
-            _UploadMessage = "File upload failed";
-            Logger.LogError(exception, _UploadMessage);
-          }
-        }
-        _ProgressPercent = null;
-      }
-    }
 
-    private async Task<TransferStatus> UploadFile(IBrowserFile file, double fileWeight)
-    {
-      using var fileData = new FileData(file.OpenReadStream(_MaxFileSize), file.Name, file.Size);
-      TransferStatus result = await TransferDataService.UploadAsync(fileData, new Progress<uint>((percent) =>
-      {
-        _ProgressPercent = (uint)(percent * fileWeight);
-        StateHasChanged();
-      }));
-      return result;
+          //Select first frame
+          if (_JSModule != null && _DataFrames.Any())
+          {
+            await _JSModule.InvokeVoidAsync("updateScene", _DataFrames.First());
+          }
+          _ProgressPercent = null;
+        }
+      }
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
