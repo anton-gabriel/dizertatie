@@ -74,16 +74,3 @@
     <NotAuthorizedDisplay />
   </NotAuthorized>
 </AuthorizeView>
-
-
-@code {
-  private async Task UpdateFrame(ChangeEventArgs e)
-  {
-    int frame = Convert.ToInt32(e.Value);
-
-    if (_JSModule != null && frame < _DataFrames.Count)
-    {
-      await _JSModule.InvokeVoidAsync("updateScene", _DataFrames[frame]);
-    }
-  }
-}

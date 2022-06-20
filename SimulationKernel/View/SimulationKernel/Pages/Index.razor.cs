@@ -109,11 +109,27 @@ namespace SimulationKernel.Pages
           }
 
           //Select first frame
-          if (_JSModule != null && _DataFrames.Any())
+          if (_JSModule != null && _UserFiles.Any())
           {
-            await _JSModule.InvokeVoidAsync("updateScene", _DataFrames.First());
+            await _JSModule.InvokeVoidAsync("updateSceneFromObjectFile", 0);
           }
           _ProgressPercent = null;
+        }
+      }
+    }
+
+    private async Task UpdateFrame(ChangeEventArgs e)
+    {
+      int frame = Convert.ToInt32(e.Value);
+
+      if (_JSModule != null && frame < _UserFiles.Count)
+      {
+        for (int i = 0; i < 10; i++)
+        {
+          for (int frameIndex = 0; frameIndex < _UserFiles.Count; ++frameIndex)
+          {
+            await _JSModule.InvokeVoidAsync("updateSceneFromObjectFile", frameIndex);
+          }
         }
       }
     }

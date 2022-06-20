@@ -1,5 +1,6 @@
 ﻿import * as THREE from './three/three.module.js';
 import { OrbitControls } from './three/OrbitControls.js';
+import { OBJLoader } from './three/OBJLoader.js';
 
 let renderer, scene, mesh, line;
 
@@ -24,16 +25,16 @@ export function renderScene(host) {
   const gridHelper = new THREE.GridHelper(10, 50);
   scene.add(gridHelper);
 
-  var geometry = new THREE.BufferGeometry().setFromPoints([]);
-  var material = new THREE.MeshBasicMaterial({ color: 0x006BCADB, side: THREE.DoubleSide });
-  mesh = new THREE.Mesh(geometry, material);
-  geometry.verticesNeedUpdate = true;
-  scene.add(mesh);
+  //var geometry = new THREE.BufferGeometry().setFromPoints([]);
+  //var material = new THREE.MeshBasicMaterial({ color: 0x006BCADB, side: THREE.DoubleSide });
+  //mesh = new THREE.Mesh(geometry, material);
+  //geometry.verticesNeedUpdate = true;
+  //scene.add(mesh);
 
-  const wireframe = new THREE.WireframeGeometry(mesh.geometry);
-  var lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000, });
-  line = new THREE.LineSegments(wireframe, lineMaterial);
-  scene.add(line);
+  //const wireframe = new THREE.WireframeGeometry(mesh.geometry);
+  //var lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000, });
+  //line = new THREE.LineSegments(wireframe, lineMaterial);
+  //scene.add(line);
 
   renderer.setSize(host.clientWidth, window.innerHeight);
   host.appendChild(renderer.domElement);
@@ -63,15 +64,6 @@ export function updateScene(data) {
     vertices.push(new THREE.Vector3(vertex[0], vertex[1], vertex[2]));
   }
 
-  //var geometry = new THREE.BufferGeometry();
-  //geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-  //geometry.setIndex(faces);
-
-  //var material = new THREE.MeshBasicMaterial({ color: 0x006BCADB, side: THREE.DoubleSide });
-  //mesh = new THREE.Mesh(geometry, material);
-  //scene.add(geometry);
-
-
   //update mesh
   mesh.geometry.setFromPoints(vertices);
   const positionAttribute = mesh.geometry.attributes.position;
@@ -85,6 +77,35 @@ export function updateScene(data) {
   }
   //update line gemoetry
   line.geometry = new THREE.WireframeGeometry(mesh.geometry);
+}
+
+export function updateSceneFromObjectFile(index) {
+  const reader = new FileReader();
+  const input = document.getElementById('fileUpload');
+  const file = input.files[index];
+  
+  reader.addEventListener('load', async function (event) {
+    const contents = event.target.result;
+    const object = new OBJLoader().parse(contents);
+    //Check if object is mesh
+    object.traverse(function (meshChild) {
+      if (meshChild instanceof THREE.Mesh) {
+        scene.remove(mesh);
+        scene.remove(line);
+        
+        meshChild.material = new THREE.MeshBasicMaterial({ color: 0x006BCADB, side: THREE.DoubleSide });
+        const wireframe = new THREE.WireframeGeometry(meshChild.geometry);
+        var lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000, });
+        line = new THREE.LineSegments(wireframe, lineMaterial);
+        mesh = object;
+        
+        scene.add(line);
+        scene.add(object);
+      }
+    });
+  }, false);
+
+  reader.readAsText(file);
 }
 
 window.addEventListener('resize', function () {
