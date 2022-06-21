@@ -45,6 +45,12 @@
             <div class="btn-toolbar bg-light p-1" role="toolbar" aria-label="Toolbar with button groups">
               <div class="btn-group mr-2" role="group" aria-label="First group">
                 <button @onclick="ResetCamera" type="button" class="btn btn-outline-secondary">Reset camera</button>
+                <button @onclick="Play" type="button" class="btn btn-outline-secondary" disabled="@(!_JSStore.Files.Any())">
+                  <img src="icons/play_arrow_FILL0_wght100_GRAD200_opsz24.svg" />
+                </button>
+                <button @onclick="ResetCamera" type="button" class="btn btn-outline-secondary" disabled="@(!_JSStore.Files.Any())">
+                  <img src="icons/stop_FILL0_wght100_GRAD200_opsz20.svg" />
+                </button>
               </div>
             </div>
           </div>
@@ -118,6 +124,18 @@
     if (_JSStore.Module != null)
     {
       await _JSStore.Module.InvokeVoidAsync("resetCamera");
+    }
+  }
+
+  private async Task Play()
+  {
+    if (_JSStore.Module != null)
+    {
+      foreach (var file in _JSStore.Files)
+      {
+        var content = File.ReadAllBytes(file);
+        await _JSStore.Module.InvokeVoidAsync("updateSceneFromObject", file, content);
+      }
     }
   }
 

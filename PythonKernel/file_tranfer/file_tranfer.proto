@@ -50,8 +50,10 @@ enum ProcessingStatus {
 }
 
 message ProcessingInfo {
-  ProcessingStatus status = 1;
-  ProcessingMetaData metadata = 2;
+  oneof response {
+    ProcessingStatus status = 1;
+    ProcessingMetaData destination = 2;
+  }
 }
 
 message ProcessingMetaData {
@@ -64,7 +66,7 @@ service FileTransfer {
   //Send the file to the server
   rpc Transfer(stream FileTransferRequest) returns (FileTransferResponse);
   //Trigger the processing of the file
-  rpc Process(FileMetaData) returns (stream ProcessingInfo);
+  rpc Process(ProcessingMetaData) returns (stream ProcessingInfo);
   //Get the processed results from the server
   rpc Download(ProcessingMetaData) returns (stream FileDownloadResponse);
 }

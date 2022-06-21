@@ -1,11 +1,12 @@
 import file_tranfer_pb2
 import file_tranfer_pb2_grpc
 import re
+import os
+import time
 from pathlib import Path
 
 class FileTransferService(file_tranfer_pb2_grpc.FileTransferServicer):
 
-    #Override the Download method
     def Download(self, request, context):
         data_location = request.data_location
         print(f"Received data location: {data_location}")
@@ -56,6 +57,30 @@ class FileTransferService(file_tranfer_pb2_grpc.FileTransferServicer):
             progress=100,
         )
         
+    def Process(self, request, context):
+        input_files_data_location = request.data_location
+        print(f"Received input data location: {input_files_data_location}")
+
+        # check if the path is a directory
+        if not Path(input_files_data_location).is_dir():
+            yield file_tranfer_pb2.FileTransferResponse(status= file_tranfer_pb2.TransferStatus.Failed) 
+
+        # send the file metadata response
+        initial_response = file_tranfer_pb2.ProcessingInfo(
+            status=file_tranfer_pb2.ProcessingStatus.Processing
+        )
+        yield initial_response
+
+        #call simulate...
+        time.sleep(10)
+
+        results_location = os.path.join('Results', input_files_data_location)
+        response = file_tranfer_pb2.ProcessingInfo(
+            destination=file_tranfer_pb2.ProcessingMetaData(
+                data_location = results_location
+            )
+        )
+        yield response
 
     def Transfer(self, request_iterator, context):
         status = file_tranfer_pb2.TransferStatus.Progress

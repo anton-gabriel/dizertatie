@@ -1,0 +1,29 @@
+python 3.7.0
+
+def write_obj(filename, verts, faces):
+    with open(filename, 'w') as f:
+        for v in verts:
+            f.write('v %f %f %f\n' % (v[0], v[1], v[2]))
+
+        for face in faces:
+            f.write('f %d %d %d\n' % (face[0] + 1, face[1] + 1, face[2] + 1))
+
+# Foreach rollout, create a new folder and save the .obj files in it
+def write_rollout_data(full_dir_path, rollout_data):
+    out_dir = ''
+    for i in range(len(rollout_data)):
+        # Create a new folder
+        out_dir = full_dir_path + str(i)
+        os.mkdir(out_dir)
+        # Save the .obj files
+        # gt_pos
+        # pred_pos
+        for j in range(len(rollout_data[i]["gt_pos"])):
+            write_obj(out_dir + "/" + str(j) + ".obj", rollout_data[i]["pred_pos"][j], rollout_data[i]["faces"][j])
+
+    return out_dir
+
+def write_rollout_pickle(full_dir_path, filename):
+    with open(filename, 'rb') as fp:
+        rollout_data = pickle.load(fp)
+        return write_rollout_data(full_dir_path, rollout_data)

@@ -79,17 +79,16 @@
 
     _ProgressPercent = 0;
     Generated.TransferStatus result = await TransferDataService
-      .DownloadAsync(Data.InputDataLocation, new Progress<uint>((percent) =>
+      .DownloadAsync(Data.OutputDataLocation, new Progress<uint>((percent) =>
       {
         _ProgressPercent = (uint)(percent);
         StateHasChanged();
       }));
 
-    //Change to Data.OutputDataLocation
-    if (Directory.Exists(Path.Combine(@"D:\Repo\GitHub\dizertatie\PythonKernel", Data.InputDataLocation)))
+    if (Directory.Exists(Path.Combine(@"D:\Repo\GitHub\dizertatie\PythonKernel", Data.OutputDataLocation)))
     {
       //Get all .obj files from Data.InputDataLocation
-      var files = Directory.GetFiles(Path.Combine(@"D:\Repo\GitHub\dizertatie\PythonKernel", Data.InputDataLocation), "*.obj", SearchOption.TopDirectoryOnly);
+      var files = Directory.GetFiles(Path.Combine(@"D:\Repo\GitHub\dizertatie\PythonKernel", Data.OutputDataLocation), "*.obj", SearchOption.TopDirectoryOnly);
       JSStore.Files.Clear();
       foreach (var file in files)
       {

@@ -25,7 +25,7 @@
                 <button @onclick="UploadFilesAsync" disabled="@(!_UserFiles.Any())" class="btn btn-outline-secondary rounded-0" type="button">Upload</button>
               </div>
               <div class="input-group-append">
-                <button @onclick="Process" disabled="@(!_Uploaded)" class="btn btn-outline-secondary border-radius-right-only" type="button">Start processing</button>
+                <button @onclick="Process" disabled="@(!_Uploaded || _Running)" class="btn btn-outline-secondary border-radius-right-only" type="button">Start processing</button>
               </div>
             </div>
 
@@ -40,6 +40,12 @@
             {
               <div class="progress mt-1">
                 <div class="progress-bar bg-info" role="progressbar" aria-valuenow="@_ProgressPercent.Value" aria-valuemin="0" aria-valuemax="100" style="width:@_ProgressPercent.Value%"></div>
+              </div>
+            }
+            @if (@_Running)
+            {
+              <div class="progress mt-1">
+                <div class="progress-bar bg-info progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
               </div>
             }
 

@@ -1,12 +1,12 @@
 namespace SimulationKernel.Pages
 {
   using DomainModel.SimulationKernel;
+  using FluentValidation.Results;
   using Microsoft.AspNetCore.Components;
   using Microsoft.AspNetCore.Components.Authorization;
   using Microsoft.AspNetCore.Components.Forms;
   using Microsoft.JSInterop;
   using ServiceLayer.SimulationKernel;
-  using SimulationKernel.Data;
   using System;
   using System.Linq;
   using System.Threading.Tasks;
@@ -19,7 +19,9 @@ namespace SimulationKernel.Pages
     private string? _UploadMessage;
     private IReadOnlyList<IBrowserFile> _UserFiles = new List<IBrowserFile>();
     private bool _Uploaded = false;
+    private bool _Running = false;
     private readonly List<ObjectData> _DataFrames = new();
+    private SimulationMetadata? _SimulationMetadata;
 
     [Inject]
     private ILogger<Index> Logger { get; set; } = default!;
@@ -27,8 +29,6 @@ namespace SimulationKernel.Pages
     private IJSRuntime JSRuntime { get; set; } = default!;
     [Inject]
     private ISimulationMetadataService SimulationService { get; set; } = default!;
-    [Inject]
-    private ProcessedDataService ProcessedDataService { get; set; } = default!;
 
     [CascadingParameter]
     public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
@@ -55,6 +55,16 @@ namespace SimulationKernel.Pages
       if (user.Identity != null && user.Identity.IsAuthenticated)
       {
         var userName = user.Identity.Name;
+        if (_SimulationMetadata != null)
+        {
+          _Running = true;
+          await SimulationService.RunUserProcessingAsync(userName, _SimulationMetadata);
+          _Running = false;
+        }
+        else
+        {
+          Logger.LogWarning("No simulation data available");
+        }
       }
     }
 
@@ -92,20 +102,21 @@ namespace SimulationKernel.Pages
         {
           var userName = user.Identity.Name;
 
-          var result = await SimulationService.UploadUserDataAsync(userName, _UserFiles, new Progress<uint>((percent) =>
+          (ValidationResult result, SimulationMetadata simulation) = await SimulationService.UploadUserDataAsync(userName, _UserFiles, new Progress<uint>((percent) =>
           {
             _ProgressPercent = percent;
             StateHasChanged();
           }));
           if (result.IsValid)
           {
+            _SimulationMetadata = simulation;
             _Uploaded = true;
             _UploadMessage = "Uploaded successfully";
-            foreach (var file in _UserFiles)
-            {
-              ObjectData data = await ProcessedDataService.ReadObjFileAsync(file.OpenReadStream(AppOpptions.MaxFileSize));
-              _DataFrames.Add(data);
-            }
+            //foreach (var file in _UserFiles)
+            //{
+            //  ObjectData data = await ProcessedDataService.ReadObjFileAsync(file.OpenReadStream(AppOpptions.MaxFileSize));
+            //  _DataFrames.Add(data);
+            //}
           }
 
           //Select first frame

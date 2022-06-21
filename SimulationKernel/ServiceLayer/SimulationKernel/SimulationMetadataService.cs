@@ -24,11 +24,12 @@
       _TransferDataService = transferDataService ?? throw new ArgumentNullException(nameof(transferDataService));
     }
 
-    public async Task<ValidationResult> UploadUserDataAsync(
+    public async Task<(ValidationResult, SimulationMetadata)> UploadUserDataAsync(
       string userName,
       IReadOnlyList<IBrowserFile> files,
       IProgress<uint> progress)
     {
+      SimulationMetadata simulation = null;
       var result = new ValidationResult();
       string message = string.Empty;
       var user = _UserRepository.SingleOrDefault(user => user.UserName == userName);
@@ -70,7 +71,7 @@
           }
         }
 
-        var simulation = new SimulationMetadata()
+        simulation = new SimulationMetadata()
         {
           CreationDate = DateTime.Now,
           Name = processingName,
@@ -83,6 +84,45 @@
         {
           _UserRepository.Update(user, user => user.Simulations.Add(simulation));
         }
+      }
+
+      return (result, simulation);
+    }
+
+    public async Task<ProcessingStatus> RunUserProcessingAsync(
+      string userName,
+      SimulationMetadata simulation)
+    {
+      ProcessingStatus result = ProcessingStatus.NotStarted;
+      var user = _UserRepository.SingleOrDefault(
+       user => user.UserName == userName
+      );
+
+      if (user != null && simulation.Status == ProcessingStatus.NotStarted)
+      {
+        var stopwatch = new System.Diagnostics.Stopwatch();
+        stopwatch.Start();
+
+        var resultsOutputDestination = await _TransferDataService.ProcessAsync(simulation.InputDataLocation, new Progress<Generated.ProcessingStatus>(progress =>
+        {
+          result = progress switch
+          {
+            Generated.ProcessingStatus.NotStarted => ProcessingStatus.NotStarted,
+            Generated.ProcessingStatus.Processing => ProcessingStatus.Processing,
+            Generated.ProcessingStatus.Processed => ProcessingStatus.Completed,
+            _ => throw new NotImplementedException(),
+          };
+        }));
+
+        stopwatch.Stop();
+        //Update simulation results location
+        _Repository.Update(simulation,
+          simulation =>
+          {
+            simulation.OutputDataLocation = resultsOutputDestination;
+            simulation.Status = ProcessingStatus.Completed;
+            simulation.Duration = stopwatch.Elapsed;
+          });
       }
 
       return result;

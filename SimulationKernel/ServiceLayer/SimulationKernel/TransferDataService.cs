@@ -7,6 +7,7 @@
   using Grpc.Net.Client;
   using Microsoft.Extensions.Logging;
   using static Generated.FileTransfer;
+  using ProcessingStatus = Generated.ProcessingStatus;
   using TransferStatus = Generated.TransferStatus;
 
   internal class TransferDataService : ITransferDataService
@@ -128,9 +129,44 @@
       }
       catch (Exception ex)
       {
-        _Logger.LogWarning(ex, "Error downloading file");
+        _Logger.LogError(ex, "Error downloading file");
       }
       return status;
+    }
+    #endregion
+
+    #region Process
+    public async Task<string> ProcessAsync(string inputDataLocation, IProgress<ProcessingStatus> progress)
+    {
+      string outputDataDestination = string.Empty;
+
+      try
+      {
+        using var call = _Client.Process(new ProcessingMetaData
+        {
+          DataLocation = inputDataLocation
+        });
+
+        await foreach (ProcessingInfo response in call.ResponseStream.ReadAllAsync())
+        {
+          switch (response.ResponseCase)
+          {
+            case ProcessingInfo.ResponseOneofCase.Status:
+              progress.Report(response.Status);
+              break;
+            case ProcessingInfo.ResponseOneofCase.Destination:
+              outputDataDestination = response.Destination.DataLocation;
+              break;
+            default:
+              break;
+          }
+        }
+      }
+      catch (Exception ex)
+      {
+        _Logger.LogError(ex, "Processing error.");
+      }
+      return outputDataDestination;
     }
     #endregion
 
