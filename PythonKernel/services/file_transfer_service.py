@@ -4,6 +4,12 @@ import re
 import os
 import time
 from pathlib import Path
+import run_model
+import core_model
+import cloth_model
+
+RESULTS_DIRECTORY = 'Results'
+TRAINED_MODEL_DIRECTORY = 'checkpoint'
 
 class FileTransferService(file_tranfer_pb2_grpc.FileTransferServicer):
 
@@ -65,16 +71,35 @@ class FileTransferService(file_tranfer_pb2_grpc.FileTransferServicer):
         if not Path(input_files_data_location).is_dir():
             yield file_tranfer_pb2.FileTransferResponse(status= file_tranfer_pb2.TransferStatus.Failed) 
 
+         # get all .obj files in the directory
+        files = list(Path(input_files_data_location).glob('**/*.obj'))
+        # get number of files
+        num_files = len(files)
+
         # send the file metadata response
         initial_response = file_tranfer_pb2.ProcessingInfo(
             status=file_tranfer_pb2.ProcessingStatus.Processing
         )
         yield initial_response
 
-        #call simulate...
-        time.sleep(10)
+        results_location = os.path.join(RESULTS_DIRECTORY, input_files_data_location)
+        Path(results_location).mkdir(parents=True, exist_ok=True)
 
-        results_location = os.path.join('Results', input_files_data_location)
+        # Model
+        learned_model = core_model.EncodeProcessDecode(output_size=3, latent_size=128, num_layers=2, message_passing_steps=15)
+        model = cloth_model.Model(learned_model)
+        run_model.simulate(
+          model,
+          input_files_data_location, #input files path
+          num_files,#obj out frames
+          1,#rollout number
+          os.path.join(results_location, 'result.pkl'),#output file
+          TRAINED_MODEL_DIRECTORY#path dir to trained model
+        )
+        
+        #write .obj files
+        run_model.write_rollout_pickle(results_location, os.path.join(results_location, 'result.pkl'))
+
         response = file_tranfer_pb2.ProcessingInfo(
             destination=file_tranfer_pb2.ProcessingMetaData(
                 data_location = results_location

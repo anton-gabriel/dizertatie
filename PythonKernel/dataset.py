@@ -22,7 +22,7 @@ import os
 
 import tensorflow.compat.v1 as tf
 
-from . import common
+import common
 
 
 def _parse(proto, meta):

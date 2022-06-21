@@ -88,7 +88,8 @@
     if (Directory.Exists(Path.Combine(@"D:\Repo\GitHub\dizertatie\PythonKernel", Data.OutputDataLocation)))
     {
       //Get all .obj files from Data.InputDataLocation
-      var files = Directory.GetFiles(Path.Combine(@"D:\Repo\GitHub\dizertatie\PythonKernel", Data.OutputDataLocation), "*.obj", SearchOption.TopDirectoryOnly);
+      IEnumerable<string> files = Directory.GetFiles(Path.Combine(@"D:\Repo\GitHub\dizertatie\PythonKernel", Data.OutputDataLocation), "*.obj", SearchOption.TopDirectoryOnly);
+      files = files.OrderBy(n => int.Parse(System.IO.Path.GetFileNameWithoutExtension(n)));
       JSStore.Files.Clear();
       foreach (var file in files)
       {

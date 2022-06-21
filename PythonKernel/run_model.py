@@ -3,11 +3,11 @@ from absl import app
 from absl import logging
 import numpy as np
 import glob
+import os
 import tensorflow.compat.v1 as tf
-from . import cloth_eval
-from . import cloth_model
-from . import core_model
-from . import dataset
+import cloth_eval
+import cloth_model
+import core_model
 
 def process_obj_file(obj_file):
     """ 
@@ -98,29 +98,6 @@ def add_targets(data, frames_to_simulate: int):
 
   return data
 
-def evaluator(model):
-  """Run a model rollout trajectory."""
-  ds = dataset.load_dataset('D:\\Master\\disertatie\\temp\\flag_simple', 'valid')
-  ds = dataset.add_targets(ds, ['world_pos'], add_history=True)
-  inputs = tf.data.make_one_shot_iterator(ds).get_next()
-  scalar_op, traj_ops = cloth_eval.evaluate(model, inputs)
-  tf.train.create_global_step()
-
-  with tf.train.MonitoredTrainingSession(
-      checkpoint_dir='temp/checkpoint',
-      save_checkpoint_secs=None,
-      save_checkpoint_steps=None) as sess:
-    trajectories = []
-    scalars = []
-    for traj_idx in range(1):
-      logging.info('Rollout trajectory %d', traj_idx)
-      scalar_data, traj_data = sess.run([scalar_op, traj_ops])
-      trajectories.append(traj_data)
-      scalars.append(scalar_data)
-    for key in scalars[0]:
-      logging.info('%s: %g', key, np.mean([x[key] for x in scalars]))
-    with open('temp/rollout_flag_simple.pkl', 'wb') as fp:
-      pickle.dump(trajectories, fp)
 
 def simulate(model, obj_path, num_frames, num_rollouts, rollout_path, checkpoint_dir):
   """Run a model rollout trajectory."""
@@ -178,3 +155,29 @@ def main(argv):
 
 if __name__ == '__main__':
   app.run(main)
+
+
+def write_obj(filename, verts, faces):
+    with open(filename, 'w') as f:
+        for v in verts:
+            f.write('v %f %f %f\n' % (v[0], v[1], v[2]))
+
+        for face in faces:
+            f.write('f %d %d %d\n' % (face[0] + 1, face[1] + 1, face[2] + 1))
+
+# Foreach rollout, create a new folder and save the .obj files in it
+def write_rollout_data(full_dir_path, rollout_data):
+    for i in range(len(rollout_data)):
+        # Create a new folder
+        # Save the .obj files
+        # gt_pos
+        # pred_pos
+        for j in range(len(rollout_data[i]["gt_pos"])):
+            write_obj(full_dir_path + "/" + str(j) + ".obj", rollout_data[i]["pred_pos"][j], rollout_data[i]["faces"][j])
+
+    return full_dir_path
+
+def write_rollout_pickle(full_dir_path, filename):
+    with open(filename, 'rb') as fp:
+        rollout_data = pickle.load(fp)
+        return write_rollout_data(full_dir_path, rollout_data)

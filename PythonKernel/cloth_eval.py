@@ -18,7 +18,7 @@
 
 import tensorflow.compat.v1 as tf
 
-from . import common
+import common
 
 def _rollout(model, initial_state, num_steps):
   """Rolls out a model trajectory."""

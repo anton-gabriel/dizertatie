@@ -19,9 +19,9 @@
 import sonnet as snt
 import tensorflow.compat.v1 as tf
 
-from . import common
-from . import core_model
-from . import normalization
+import common
+import core_model
+import normalization
 
 
 class Model(snt.AbstractModule):
