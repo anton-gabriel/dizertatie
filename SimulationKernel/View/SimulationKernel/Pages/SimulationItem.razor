@@ -37,9 +37,13 @@
 </div>
 
 @code {
-  public record JSModuleStore
+  public record JSModuleStore(IList<string> Files, Action UpdateDelegate)
   {
     public IJSObjectReference Module { get; set; } = default!;
+    public void Update()
+    {
+      UpdateDelegate?.Invoke();
+    }
   }
 
   private uint? _ProgressPercent;
@@ -81,13 +85,28 @@
         StateHasChanged();
       }));
 
-
-    //Send path to method for loading
-    string path = @"D:\Repo\GitHub\dizertatie\SimulationKernel\View\SimulationKernel\downloaded\Processing_06192022\untitled3.obj";
-    if (JSStore != null)
+    //Change to Data.OutputDataLocation
+    if (Directory.Exists(Path.Combine(@"D:\Repo\GitHub\dizertatie\PythonKernel", Data.InputDataLocation)))
     {
-      await JSStore.Module.InvokeVoidAsync("loadObjData", path);
+      //Get all .obj files from Data.InputDataLocation
+      var files = Directory.GetFiles(Path.Combine(@"D:\Repo\GitHub\dizertatie\PythonKernel", Data.InputDataLocation), "*.obj", SearchOption.TopDirectoryOnly);
+      JSStore.Files.Clear();
+      foreach (var file in files)
+      {
+        JSStore.Files.Add(file);
+      }
     }
+    JSStore.Update();
+
+
+    //Select first frame
+    if (JSStore != null && JSStore.Files.Any())
+    {
+      string filePath = JSStore.Files.First();
+      var content = File.ReadAllBytes(filePath);
+      await JSStore.Module.InvokeVoidAsync("updateSceneFromObject", filePath, content);
+    }
+
     _ProgressPercent = null;
   }
 }

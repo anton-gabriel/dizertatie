@@ -59,8 +59,8 @@
 
           <input @oninput="@UpdateFrame"
                  min=0
-                 max=@_DataFrames.Count
-                 disabled="@(!_DataFrames.Any())"
+                 max=@_UserFiles.Count
+                 disabled="@(!_UserFiles.Any())"
                  type="range" class="m-4 form-range" />
 
           <div @ref=_CanvasHostReference></div>

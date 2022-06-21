@@ -39,17 +39,21 @@
       </div>
 
 
-      <div class="col-xl-12 mt-5">
+      <div class="col-xl-12  mt-5">
         <div class="card shadow">
           <div class="card-header">
             <div class="btn-toolbar bg-light p-1" role="toolbar" aria-label="Toolbar with button groups">
               <div class="btn-group mr-2" role="group" aria-label="First group">
-                <button type="button" class="btn btn-outline-secondary">Reset camera</button>
+                <button @onclick="ResetCamera" type="button" class="btn btn-outline-secondary">Reset camera</button>
               </div>
             </div>
           </div>
 
-          <input min=0 type="range" class="m-4 form-range" />
+          <input @oninput="@UpdateFrame"
+                 min=0
+                 max=@_JSStore.Files.Count
+                 disabled="@(!_JSStore.Files.Any())"
+                 type="range" class="m-4 form-range" />
 
           <div @ref=_CanvasHostReference></div>
         </div>
@@ -64,7 +68,7 @@
 
 @code {
   private ElementReference _CanvasHostReference;
-  private SimulationItem.JSModuleStore _JSStore = new SimulationItem.JSModuleStore();
+  private SimulationItem.JSModuleStore _JSStore = default!;
   private IEnumerable<SimulationMetadata>? Items;
 
   [Inject]
@@ -76,6 +80,11 @@
 
   [CascadingParameter]
   public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+  protected override void OnInitialized()
+  {
+    _JSStore = new SimulationItem.JSModuleStore(new List<string>(), () => StateHasChanged());
+  }
 
   protected override async Task OnAfterRenderAsync(bool firstRender)
   {
@@ -101,6 +110,26 @@
     {
       var userName = user.Identity.Name;
       Items = SimulationService.GetUserProcessings(userName, limit: 3);
+    }
+  }
+
+  private async Task ResetCamera()
+  {
+    if (_JSStore.Module != null)
+    {
+      await _JSStore.Module.InvokeVoidAsync("resetCamera");
+    }
+  }
+
+  private async Task UpdateFrame(ChangeEventArgs e)
+  {
+    int frame = Convert.ToInt32(e.Value);
+
+    if (_JSStore.Module != null && frame < _JSStore.Files.Count)
+    {
+      string filePath = _JSStore.Files[frame];
+      var content = File.ReadAllBytes(filePath);
+      await _JSStore.Module.InvokeVoidAsync("updateSceneFromObject", filePath, content);
     }
   }
 }

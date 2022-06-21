@@ -91,7 +91,7 @@ namespace SimulationKernel.Pages
         if (user.Identity != null && user.Identity.IsAuthenticated)
         {
           var userName = user.Identity.Name;
-          
+
           var result = await SimulationService.UploadUserDataAsync(userName, _UserFiles, new Progress<uint>((percent) =>
           {
             _ProgressPercent = percent;
@@ -124,13 +124,7 @@ namespace SimulationKernel.Pages
 
       if (_JSModule != null && frame < _UserFiles.Count)
       {
-        for (int i = 0; i < 10; i++)
-        {
-          for (int frameIndex = 0; frameIndex < _UserFiles.Count; ++frameIndex)
-          {
-            await _JSModule.InvokeVoidAsync("updateSceneFromObjectFile", frameIndex);
-          }
-        }
+        await _JSModule.InvokeVoidAsync("updateSceneFromObjectFile", frame);
       }
     }
 
