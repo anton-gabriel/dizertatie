@@ -83,7 +83,7 @@
     #endregion
 
     #region Download
-    public async Task<TransferStatus> DownloadAsync(string location, IProgress<uint> progress)
+    public async Task<TransferStatus> DownloadAsync(string location, IProgress<uint> progress, Action<(byte[] bytes, string file)> onFileReceived)
     {
       TransferStatus status = TransferStatus.Pending;
       try
@@ -96,7 +96,7 @@
         string downloadLocation = Path.Combine("downloaded", Path.GetFileName(location));
         Directory.CreateDirectory(downloadLocation);
 
-        FileStream writeStream = null;
+        var fileBytes = new List<byte>();
 
         await foreach (FileDownloadResponse response in call.ResponseStream.ReadAllAsync())
         {
@@ -106,16 +106,16 @@
               {
                 string fileName = Path.ChangeExtension(response.Metadata.Name, response.Metadata.Extension);
                 string filePath = Path.Combine(downloadLocation, fileName);
-                writeStream?.Close();
-                writeStream = new FileStream(filePath, FileMode.Create);
+                if (fileBytes.Any())
+                {
+                  onFileReceived?.Invoke((fileBytes.ToArray(), fileName));
+                  fileBytes.Clear();
+                }
               }
               break;
             case FileDownloadResponse.ResponseOneofCase.File:
-              if (writeStream != null)
-              {
-                var bytes = response.File.Chunk.Memory;
-                await writeStream.WriteAsync(bytes);
-              }
+              var bytes = response.File.Chunk.Memory;
+              fileBytes.AddRange(bytes.ToArray());
               break;
             default:
               break;
@@ -125,7 +125,6 @@
           progress.Report(response.Progress);
           System.Diagnostics.Debug.WriteLine($"progress: {response.Progress}");
         }
-        writeStream?.Close();
       }
       catch (Exception ex)
       {

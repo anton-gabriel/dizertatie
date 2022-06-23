@@ -45,10 +45,10 @@
             <div class="btn-toolbar bg-light p-1" role="toolbar" aria-label="Toolbar with button groups">
               <div class="btn-group mr-2" role="group" aria-label="First group">
                 <button @onclick="ResetCamera" type="button" class="btn btn-outline-secondary">Reset camera</button>
-                <button @onclick="Play" type="button" class="btn btn-outline-secondary" disabled="@(!_JSStore.Files.Any())">
+                <button @onclick="Play" type="button" class="btn btn-outline-secondary" disabled="@(_JSStore.Files == 0 || _Playing)">
                   <img src="icons/play_arrow_FILL0_wght100_GRAD200_opsz24.svg" />
                 </button>
-                <button @onclick="ResetCamera" type="button" class="btn btn-outline-secondary" disabled="@(!_JSStore.Files.Any())">
+                <button @onclick="Stop" type="button" class="btn btn-outline-secondary" disabled="@(_JSStore.Files == 0)">
                   <img src="icons/stop_FILL0_wght100_GRAD200_opsz20.svg" />
                 </button>
               </div>
@@ -57,8 +57,8 @@
 
           <input @oninput="@UpdateFrame"
                  min=0
-                 max=@_JSStore.Files.Count
-                 disabled="@(!_JSStore.Files.Any())"
+                 max=@_JSStore.Files
+                 disabled="@(_JSStore.Files == 0)"
                  type="range" class="m-4 form-range" />
 
           <div @ref=_CanvasHostReference></div>
@@ -76,6 +76,8 @@
   private ElementReference _CanvasHostReference;
   private SimulationItem.JSModuleStore _JSStore = default!;
   private IEnumerable<SimulationMetadata>? Items;
+  private bool _Playing = false;
+  private CancellationTokenSource? _CancellationToken;
 
   [Inject]
   private IJSRuntime JSRuntime { get; set; } = default!;
@@ -89,7 +91,8 @@
 
   protected override void OnInitialized()
   {
-    _JSStore = new SimulationItem.JSModuleStore(new List<string>(), () => StateHasChanged());
+    _JSStore = new SimulationItem.JSModuleStore(() =>
+    StateHasChanged());
   }
 
   protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -129,25 +132,46 @@
 
   private async Task Play()
   {
+    _Playing = true;
     if (_JSStore.Module != null)
     {
-      foreach (var file in _JSStore.Files)
+      try
       {
-        var content = File.ReadAllBytes(file);
-        await _JSStore.Module.InvokeVoidAsync("updateSceneFromObject", file, content);
+        _CancellationToken = new CancellationTokenSource();
+        for (int i = 0; i < 50; ++i)
+        {
+          for (int frame = 0; frame < _JSStore.Files; ++frame)
+          {
+            _CancellationToken.Token.ThrowIfCancellationRequested();
+            await Task.Delay(10);
+            await _JSStore.Module.InvokeVoidAsync("updateFrameByIndex", frame);
+          }
+        }
+      }
+      catch (OperationCanceledException)
+      {
+      }
+      finally
+      {
+        _CancellationToken = null;
       }
     }
+    _Playing = false;
+  }
+
+  private void Stop()
+  {
+    _Playing = false;
+    _CancellationToken?.Cancel();
   }
 
   private async Task UpdateFrame(ChangeEventArgs e)
   {
     int frame = Convert.ToInt32(e.Value);
 
-    if (_JSStore.Module != null && frame < _JSStore.Files.Count)
+    if (_JSStore.Module != null)
     {
-      string filePath = _JSStore.Files[frame];
-      var content = File.ReadAllBytes(filePath);
-      await _JSStore.Module.InvokeVoidAsync("updateSceneFromObject", filePath, content);
+      await _JSStore.Module.InvokeVoidAsync("updateFrameByIndex", frame);
     }
   }
 }

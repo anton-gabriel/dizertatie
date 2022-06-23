@@ -25,7 +25,8 @@
       }
       <div class="d-flex justify-content-between align-items-center">
         <div class="btn-group">
-          <button type="button" @onclick="ViewData" class="btn btn-sm btn-outline-secondary">View</button>
+          <button type="button" disabled="@(Data.Status != ProcessingStatus.Completed)" @onclick="ViewData" class="btn btn-sm btn-outline-secondary">View</button>
+          <button type="button" @onclick="RemoveData" class="btn btn-sm btn-outline-secondary">Remove</button>
         </div>
         @if (@Data.Duration.HasValue)
         {
@@ -37,9 +38,10 @@
 </div>
 
 @code {
-  public record JSModuleStore(IList<string> Files, Action UpdateDelegate)
+  public record JSModuleStore(Action UpdateDelegate)
   {
     public IJSObjectReference Module { get; set; } = default!;
+    public int Files { get; set; }
     public void Update()
     {
       UpdateDelegate?.Invoke();
@@ -47,6 +49,8 @@
   }
 
   private uint? _ProgressPercent;
+  private IJSObjectReference? _JSModule;
+
 
   [Parameter, EditorRequired]
   public JSModuleStore JSStore { get; set; } = default!;
@@ -54,6 +58,8 @@
   public SimulationMetadata Data { get; set; } = SimulationMetadata.Empty;
   [Inject]
   private ITransferDataService TransferDataService { get; set; } = default!;
+  [Inject]
+  private IJSRuntime JSRuntime { get; set; } = default!;
 
 
   private string StatusClass(ProcessingStatus status)
@@ -71,42 +77,58 @@
     }
   }
 
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    if (firstRender)
+    {
+      _JSModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "/js/download.js");
+    }
+    await base.OnAfterRenderAsync(firstRender);
+  }
+
   private async Task ViewData()
   {
-    //To do:
-    //1. Change Simulation Names ('Processing_0619202259749026')
-    //2. Disable View button in SimulationItem if the status is not Completed
-
     _ProgressPercent = 0;
+
+    if (JSStore != null)
+    {
+      JSStore.Files = 0;
+      await JSStore.Module.InvokeVoidAsync("clearFrames", 0);
+    }
+
     Generated.TransferStatus result = await TransferDataService
       .DownloadAsync(Data.OutputDataLocation, new Progress<uint>((percent) =>
       {
         _ProgressPercent = (uint)(percent);
         StateHasChanged();
-      }));
+      }), f => { });
 
-    if (Directory.Exists(Path.Combine(@"D:\Repo\GitHub\dizertatie\PythonKernel", Data.OutputDataLocation)))
-    {
-      //Get all .obj files from Data.InputDataLocation
-      IEnumerable<string> files = Directory.GetFiles(Path.Combine(@"D:\Repo\GitHub\dizertatie\PythonKernel", Data.OutputDataLocation), "*.obj", SearchOption.TopDirectoryOnly);
-      files = files.OrderBy(n => int.Parse(System.IO.Path.GetFileNameWithoutExtension(n)));
-      JSStore.Files.Clear();
-      foreach (var file in files)
-      {
-        JSStore.Files.Add(file);
-      }
-    }
-    JSStore.Update();
-
+      //async f =>
+      //{
+      //  if (JSStore != null)
+      //  {
+      //    await JSStore.Module.InvokeVoidAsync("loadFrame", f.file, f.bytes);
+      //    JSStore.Files++;
+      //    StateHasChanged();
+      //  }
+      //});
 
     //Select first frame
-    if (JSStore != null && JSStore.Files.Any())
+    if (JSStore != null)
     {
-      string filePath = JSStore.Files.First();
-      var content = File.ReadAllBytes(filePath);
-      await JSStore.Module.InvokeVoidAsync("updateSceneFromObject", filePath, content);
+      await JSStore.Module.InvokeVoidAsync("updateFrameByIndex", 0);
+      JSStore.Update();
     }
 
     _ProgressPercent = null;
+  }
+
+  private async Task RemoveData()
+  {
+    bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+    if (confirmed)
+    {
+        // Delete!
+    }
   }
 }

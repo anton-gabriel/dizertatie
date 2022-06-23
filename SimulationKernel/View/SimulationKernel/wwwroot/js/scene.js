@@ -3,6 +3,8 @@ import { OrbitControls } from './three/OrbitControls.js';
 import { OBJLoader } from './three/OBJLoader.js';
 
 let renderer, scene, mesh, line;
+const frames = [];
+const lines = [];
 
 export function renderScene(host) {
   scene = new THREE.Scene();
@@ -135,6 +137,50 @@ export function updateSceneFromObject(name, content) {
   }, false);
 
   reader.readAsText(file);
+}
+
+export function loadFrame(name, content) {
+  const reader = new FileReader();
+  //Create File from fileName
+  const file = new File([content], name);
+
+  reader.addEventListener('load', async function (event) {
+    const contents = event.target.result;
+    const object = new OBJLoader().parse(contents);
+    //Check if object is mesh
+    object.traverse(function (meshChild) {
+      if (meshChild instanceof THREE.Mesh) {
+        meshChild.material = new THREE.MeshBasicMaterial({ color: 0x006BCADB, side: THREE.DoubleSide });
+        const wireframe = new THREE.WireframeGeometry(meshChild.geometry);
+        var lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000, });
+        line = new THREE.LineSegments(wireframe, lineMaterial);
+        frames.push(object);
+        lines.push(line);
+      }
+    });
+  }, false);
+
+  reader.readAsText(file);
+}
+
+export function clearFrames() {
+  frames.length = 0;
+  lines.length = 0;
+}
+
+export function updateFrameByIndex(index) {
+  frames.forEach(f => scene.remove(f));
+  lines.forEach(l => scene.remove(l));
+
+  const object = frames[index];
+  const line = lines[index];
+  if (index < frames.length) {
+    scene.remove(object);
+    scene.remove(line);
+
+    scene.add(line);
+    scene.add(object);
+  }
 }
 
 window.addEventListener('resize', function () {

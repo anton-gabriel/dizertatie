@@ -23,6 +23,7 @@ class FileTransferService(file_tranfer_pb2_grpc.FileTransferServicer):
        
         # get all .obj files in the directory
         files = list(Path(data_location).glob('**/*.obj'))
+        files.sort(key = lambda f : int(Path(f).stem))
         # get number of files
         num_files = len(files)
 
