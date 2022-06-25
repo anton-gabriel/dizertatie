@@ -27,7 +27,7 @@
       <div class="d-flex justify-content-between align-items-center">
         <div class="btn-group">
           <button type="button" disabled="@(Data.Status != ProcessingStatus.Completed)" @onclick="ViewData" class="btn btn-sm btn-outline-secondary">View</button>
-          <button type="button" disabled="@(Data.Status != ProcessingStatus.NotStarted)" @onclick="Process" class="btn btn-sm btn-outline-secondary">Process</button>
+          <button type="button" disabled="@(Data.Status != ProcessingStatus.NotStarted || _Running)" @onclick="Process" class="btn btn-sm btn-outline-secondary">Process</button>
           <button type="button" disabled="@_Running" @onclick="RemoveData" class="btn btn-sm btn-outline-secondary">Remove</button>
         </div>
         @if (@Data.Duration.HasValue)

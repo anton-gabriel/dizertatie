@@ -29,12 +29,21 @@
       _Client = new FileTransferClient(channel);
     }
 
+    private bool Running { get; set; }
+    private bool Downloading { get; set; }
+    private bool Uploading { get; set; }
+
     #region Upload
     public async Task<TransferStatus> UploadAsync(FileData file, IProgress<uint> progress)
     {
       TransferStatus status = TransferStatus.Pending;
+      if (Uploading)
+      {
+        return status;
+      }
       try
       {
+        Uploading = true;
         using var transfer = _Client.Transfer();
         await SendMetadata(transfer, file.Name, file.Destination);
 
@@ -65,6 +74,7 @@
       finally
       {
         _UploadProgressHistory.Clear();
+        Uploading = false;
       }
       return status;
     }
@@ -99,8 +109,13 @@
     public async Task<TransferStatus> DownloadAsync(string location, IProgress<uint> progress, Action<(byte[] bytes, string file)> onFileReceived)
     {
       TransferStatus status = TransferStatus.Pending;
+      if (Downloading)
+      {
+        return status;
+      }
       try
       {
+        Downloading = true;
         using var call = _Client.Download(new ProcessingMetaData
         {
           DataLocation = location
@@ -150,6 +165,7 @@
       finally
       {
         _DownloadProgressHistory.Clear();
+        Downloading = false;
       }
       return status;
     }
@@ -159,9 +175,13 @@
     public async Task<string> ProcessAsync(string inputDataLocation, IProgress<ProcessingStatus> progress)
     {
       string outputDataDestination = string.Empty;
-
+      if (Running)
+      {
+        return outputDataDestination;
+      }
       try
       {
+        Running = true;
         using var call = _Client.Process(new ProcessingMetaData
         {
           DataLocation = inputDataLocation
@@ -185,6 +205,10 @@
       catch (Exception ex)
       {
         _Logger.LogError(ex, "Processing error.");
+      }
+      finally
+      {
+        Running = false;
       }
       return outputDataDestination;
     }
