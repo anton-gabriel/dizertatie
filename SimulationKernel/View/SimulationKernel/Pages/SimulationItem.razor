@@ -23,22 +23,34 @@
       {
         <div class="mb-2" style="height:5px;"></div>
       }
+
       <div class="d-flex justify-content-between align-items-center">
         <div class="btn-group">
           <button type="button" disabled="@(Data.Status != ProcessingStatus.Completed)" @onclick="ViewData" class="btn btn-sm btn-outline-secondary">View</button>
-          <button type="button" @onclick="RemoveData" class="btn btn-sm btn-outline-secondary">Remove</button>
+          <button type="button" disabled="@(Data.Status != ProcessingStatus.NotStarted)" @onclick="Process" class="btn btn-sm btn-outline-secondary">Process</button>
+          <button type="button" disabled="@_Running" @onclick="RemoveData" class="btn btn-sm btn-outline-secondary">Remove</button>
         </div>
         @if (@Data.Duration.HasValue)
         {
           <small class="text-muted">@($"{Data.Duration?.Minutes}m {Data.Duration?.Seconds}s")</small>
         }
       </div>
+      @if (@_Running)
+      {
+        <div class="progress mt-2" style="height:5px;">
+          <div class="progress-bar bg-info progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+        </div>
+      }
+      else
+      {
+        <div class="mb-2" style="height:5px;"></div>
+      }
     </div>
   </div>
 </div>
 
 @code {
-  public record JSModuleStore(Action UpdateDelegate)
+  public record JSModuleStore(Action UpdateDelegate, Action<SimulationMetadata> OnRemoved)
   {
     public IJSObjectReference Module { get; set; } = default!;
     public int Files { get; set; }
@@ -46,10 +58,15 @@
     {
       UpdateDelegate?.Invoke();
     }
+    public void NotifyItemRemoved(SimulationMetadata item)
+    {
+      OnRemoved?.Invoke(item);
+    }
   }
 
   private uint? _ProgressPercent;
   private IJSObjectReference? _JSModule;
+  private bool _Running = false;
 
 
   [Parameter, EditorRequired]
@@ -59,7 +76,13 @@
   [Inject]
   private ITransferDataService TransferDataService { get; set; } = default!;
   [Inject]
+  private ISimulationMetadataService SimulationService { get; set; } = default!;
+  [Inject]
   private IJSRuntime JSRuntime { get; set; } = default!;
+  [Inject]
+  private ILogger<SimulationItem> Logger { get; set; } = default!;
+  [CascadingParameter]
+  public Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
 
   private string StatusClass(ProcessingStatus status)
@@ -93,7 +116,7 @@
     if (JSStore != null)
     {
       JSStore.Files = 0;
-      await JSStore.Module.InvokeVoidAsync("clearFrames", 0);
+      await JSStore.Module.InvokeVoidAsync("clearFrames");
     }
 
     Generated.TransferStatus result = await TransferDataService
@@ -101,17 +124,15 @@
       {
         _ProgressPercent = (uint)(percent);
         StateHasChanged();
-      }), f => { });
-
-      //async f =>
-      //{
-      //  if (JSStore != null)
-      //  {
-      //    await JSStore.Module.InvokeVoidAsync("loadFrame", f.file, f.bytes);
-      //    JSStore.Files++;
-      //    StateHasChanged();
-      //  }
-      //});
+      }), async f =>
+      {
+        if (JSStore != null)
+        {
+          await JSStore.Module.InvokeVoidAsync("loadFrame", f.file, f.bytes);
+          JSStore.Files++;
+          StateHasChanged();
+        }
+      });
 
     //Select first frame
     if (JSStore != null)
@@ -123,12 +144,40 @@
     _ProgressPercent = null;
   }
 
+  private async Task Process()
+  {
+    var authState = await AuthenticationStateTask;
+    var user = authState.User;
+    if (user.Identity != null && user.Identity.IsAuthenticated)
+    {
+      var userName = user.Identity.Name;
+      if (Data != null)
+      {
+        _Running = true;
+        await SimulationService.RunUserProcessingAsync(userName, Data);
+        _Running = false;
+      }
+      else
+      {
+        Logger.LogWarning("No simulation data available");
+      }
+    }
+  }
+
   private async Task RemoveData()
   {
     bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
     if (confirmed)
     {
-        // Delete!
+      try
+      {
+        SimulationService.Remove(Data.Id);
+        JSStore.NotifyItemRemoved(Data);
+      }
+      catch (Exception exception)
+      {
+        Logger.LogError($"Error while removing {typeof(SimulationItem)}", exception);
+      }
     }
   }
 }

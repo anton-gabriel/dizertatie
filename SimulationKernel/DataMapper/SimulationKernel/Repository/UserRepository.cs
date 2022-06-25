@@ -11,5 +11,22 @@
       : base(contextFactory, logger)
     {
     }
+
+    public int GetNumberOfProcessings(string userName)
+    {
+      try
+      {
+        using var context = this.ContextFactory.CreateDbContext();
+        IQueryable<User> query = context.Set<User>();
+        User user = query.SingleOrDefault(user => user.UserName == userName);
+        return user != null ? user.Simulations.Count() : 0;
+      }
+      catch (Exception exception)
+      {
+        string message = string.Format(Resources.ExceptionOccurredMessage, nameof(SingleOrDefault), exception.Message);
+        this.Logger.LogWarning(message);
+        throw new RepositoryException(message, exception);
+      }
+    }
   }
 }

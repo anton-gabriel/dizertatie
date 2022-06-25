@@ -29,12 +29,12 @@
               </div>
             </div>
 
-            @if (@_UploadMessage is not null)
+           @* @if (@_UploadMessage is not null)
             {
-              <div class="alert alert-warning p-1 mt-2" for="fileUpload">
+              <div class="alert alert-info alert-dismissible fade show p-1 mt-2" role="alert">
                 @_UploadMessage
               </div>
-            }
+            }*@
 
             @if (@_ProgressPercent.HasValue)
             {

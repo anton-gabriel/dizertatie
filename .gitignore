@@ -351,3 +351,6 @@ MigrationBackup/
 
 /PythonKernel/local
 /PythonKernel/checkpoint
+PythonKernel/checkpoint.zip
+
+*.pkl

@@ -6,6 +6,8 @@
 @using ServiceLayer.SimulationKernel
 @using SimulationKernel.Data
 
+@implements IDisposable
+
 <AuthorizeView>
   <Authorized>
     <div class="m-5">
@@ -31,6 +33,17 @@
                     }
                   </div>
                 </div>
+              </div>
+              <div class="d-flex justify-content-center">
+                <nav>
+                  <ul class="pagination">
+                    @for (int pageNumber = 0; pageNumber < _NumberOfPages && pageNumber < _MaxNumberOfPages; ++pageNumber)
+                    {
+                      int page = pageNumber + 1;
+                      <li class="page-item"><a class="page-link text-secondary" style="@StyleForPageNumber(page)" @onclick="() => GetUserProcessings(page)" href="" @onclick:preventDefault>@(page)</a></li>
+                    }
+                  </ul>
+                </nav>
               </div>
             }
 
@@ -75,9 +88,14 @@
 @code {
   private ElementReference _CanvasHostReference;
   private SimulationItem.JSModuleStore _JSStore = default!;
-  private IEnumerable<SimulationMetadata>? Items;
+  private IList<SimulationMetadata>? Items;
   private bool _Playing = false;
+  private int _NumberOfPages = 0;
+  private int _CurrentPage = 0;
   private CancellationTokenSource? _CancellationToken;
+
+  private static readonly int _MaxNumberOfPages = 5;
+  private static readonly int _MaxNumberOfItemsPerPages = 3;
 
   [Inject]
   private IJSRuntime JSRuntime { get; set; } = default!;
@@ -91,8 +109,13 @@
 
   protected override void OnInitialized()
   {
-    _JSStore = new SimulationItem.JSModuleStore(() =>
-    StateHasChanged());
+    _JSStore = new SimulationItem.JSModuleStore(
+      () => StateHasChanged(),
+      async item =>
+      {
+        await GetUserProcessings(pageNumber: 1);
+        StateHasChanged();
+      });
   }
 
   protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -113,12 +136,21 @@
   {
     await base.OnInitializedAsync();
 
+    await GetUserProcessings(pageNumber: 1);
+  }
+
+
+  private async Task GetUserProcessings(int pageNumber)
+  {
     var authState = await AuthenticationStateTask;
     var user = authState.User;
     if (user.Identity != null && user.Identity.IsAuthenticated)
     {
       var userName = user.Identity.Name;
-      Items = SimulationService.GetUserProcessings(userName, limit: 3);
+      Items = SimulationService.GetUserProcessings(userName, pageNumber, pageSize: 3).ToList();
+      int numberOfProcessings = SimulationService.GetUserProcessings(userName);
+      _NumberOfPages = (int) Math.Ceiling((decimal)numberOfProcessings / _MaxNumberOfItemsPerPages);
+      _CurrentPage = pageNumber;
     }
   }
 
@@ -165,6 +197,11 @@
     _CancellationToken?.Cancel();
   }
 
+  private string StyleForPageNumber(int pageNumber)
+  {
+    return pageNumber == _CurrentPage ? "background-color:#F8F9FA" : string.Empty;
+  }
+
   private async Task UpdateFrame(ChangeEventArgs e)
   {
     int frame = Convert.ToInt32(e.Value);
@@ -174,4 +211,18 @@
       await _JSStore.Module.InvokeVoidAsync("updateFrameByIndex", frame);
     }
   }
+
+  public void Dispose()
+  {
+    try
+    {
+      Stop();
+      GC.SuppressFinalize(this);
+    }
+    catch (JSDisconnectedException)
+    {
+      System.Diagnostics.Debug.WriteLine("JavaScript runtime disconnected (SignalR disconnected).");
+    }
+  }
+
 }

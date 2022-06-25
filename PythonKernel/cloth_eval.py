@@ -33,6 +33,7 @@ def _rollout(model, initial_state, num_steps):
     trajectory = trajectory.write(step, cur_pos)
     return step+1, cur_pos, next_pos, trajectory
 
+  # trajectory is a new frame (obj) produced by the model
   _, _, _, output = tf.while_loop(
       cond=lambda step, last, cur, traj: tf.less(step, num_steps),
       body=step_fn,
@@ -62,6 +63,8 @@ def evaluate(model, inputs):
   prediction = _rollout(model, initial_state, num_steps)
 
   error = tf.reduce_mean((prediction - inputs['world_pos'])**2, axis=-1)
+  
+  # compute the error for frames groups (1, 10...)
   scalars = {'mse_%d_steps' % horizon: tf.reduce_mean(error[1:horizon+1])
              for horizon in [1, 10, 20, 50, 100, 200]}
   traj_ops = {

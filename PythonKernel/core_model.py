@@ -116,6 +116,7 @@ class EncodeProcessDecode(snt.AbstractModule):
     """Encodes and processes a multigraph, and returns node features."""
     model_fn = functools.partial(self._make_mlp, output_size=self._latent_size)
     latent_graph = self._encoder(graph)
+    # latent_graph is a MultiGraph with node_features and edge_sets encoded now
     for _ in range(self._message_passing_steps):
       latent_graph = GraphNetBlock(model_fn)(latent_graph)
     return self._decoder(latent_graph)

@@ -19,6 +19,7 @@
 import sonnet as snt
 import tensorflow.compat.v1 as tf
 
+import sys
 import common
 import core_model
 import normalization
@@ -47,6 +48,7 @@ class Model(snt.AbstractModule):
 
     # construct graph edges
     senders, receivers = common.triangles_to_edges(inputs['cells'])
+    # Compute relative position of senders (relative to receivers) / consider the receivers as origin.
     relative_world_pos = (tf.gather(inputs['world_pos'], senders) -
                           tf.gather(inputs['world_pos'], receivers))
     relative_mesh_pos = (tf.gather(inputs['mesh_pos'], senders) -
@@ -67,6 +69,7 @@ class Model(snt.AbstractModule):
         edge_sets=[mesh_edges])
 
   def _build(self, inputs):
+    #inputs is a frame of data (dictionary)
     graph = self._build_graph(inputs, is_training=False)
     per_node_network_output = self._learned_model(graph)
     return self._update(inputs, per_node_network_output)

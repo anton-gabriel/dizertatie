@@ -128,15 +128,25 @@
       return result;
     }
 
-    public IEnumerable<SimulationMetadata> GetUserProcessings(string userName, int limit)
+    public IEnumerable<SimulationMetadata> GetUserProcessings(string userName, int pageNumber, int pageSize)
     {
       var user = _UserRepository.SingleOrDefault(
         user => user.UserName == userName,
-        user => user.Simulations.Take(limit)
+        user => user.Simulations
+          .OrderByDescending(s => s.CreationDate)
+          .Skip((pageNumber - 1) * pageSize)
+          .Take(pageSize)
      );
 
       return user != null ? user.Simulations : Enumerable.Empty<SimulationMetadata>();
     }
+
+    public int GetUserProcessings(string userName)
+    {
+      int result = _UserRepository.GetNumberOfProcessings(userName);
+      return result;
+    }
+
 
     private async Task<Generated.TransferStatus> UploadFile(IBrowserFile file, double fileWeight, string destination, IProgress<uint> progress)
     {

@@ -164,6 +164,8 @@ export function loadFrame(name, content) {
 }
 
 export function clearFrames() {
+  frames.forEach(f => scene.remove(f));
+  lines.forEach(l => scene.remove(l));
   frames.length = 0;
   lines.length = 0;
 }

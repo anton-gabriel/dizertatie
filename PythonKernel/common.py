@@ -47,5 +47,9 @@ def triangles_to_edges(faces):
   unique_edges = tf.bitcast(tf.unique(packed_edges)[0], tf.int32)
   senders, receivers = tf.unstack(unique_edges, axis=1)
   # create two-way connectivity
+  # unique_edges:
+  # [[811, 0],  edge (node to node)
+  # [1936, 3],  edge (node to node)
+  # ...
   return (tf.concat([senders, receivers], axis=0),
           tf.concat([receivers, senders], axis=0))

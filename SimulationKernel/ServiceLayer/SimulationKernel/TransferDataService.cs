@@ -6,12 +6,16 @@
   using Grpc.Core;
   using Grpc.Net.Client;
   using Microsoft.Extensions.Logging;
+  using System.Collections.Concurrent;
   using static Generated.FileTransfer;
   using ProcessingStatus = Generated.ProcessingStatus;
   using TransferStatus = Generated.TransferStatus;
 
   internal class TransferDataService : ITransferDataService
   {
+    private readonly ConcurrentDictionary<uint, byte> _UploadProgressHistory = new();
+    private readonly ConcurrentDictionary<uint, byte> _DownloadProgressHistory = new();
+
     private static readonly string _FileExtension = ".obj";
     private static readonly int _ChunkSize = 10 * 1024;//10KB buffer
 
@@ -42,7 +46,12 @@
           totalRead += bytesRead;
           await SendFileChunk(transfer, bytesRead, buffer);
           uint progressPercentage = (uint)(decimal.Divide(totalRead, file.Size) * 100);
-          progress.Report(progressPercentage);
+          if (!_UploadProgressHistory.ContainsKey(progressPercentage))
+          {
+            progress.Report(progressPercentage);
+            _UploadProgressHistory.TryAdd(progressPercentage, 0);
+            Console.WriteLine($"Upload progress: {progressPercentage}");
+          }
         }
 
         await transfer.RequestStream.CompleteAsync();
@@ -52,6 +61,10 @@
       catch (Exception ex)
       {
         _Logger.LogWarning(ex, "Error uploading file");
+      }
+      finally
+      {
+        _UploadProgressHistory.Clear();
       }
       return status;
     }
@@ -122,13 +135,21 @@
           }
 
           status = response.Status;
-          progress.Report(response.Progress);
-          System.Diagnostics.Debug.WriteLine($"progress: {response.Progress}");
+          if (!_DownloadProgressHistory.ContainsKey(response.Progress))
+          {
+            progress.Report(response.Progress);
+            _DownloadProgressHistory.TryAdd(response.Progress, 0);
+          }
+          Console.WriteLine($"Download progress: {response.Progress}");
         }
       }
       catch (Exception ex)
       {
         _Logger.LogError(ex, "Error downloading file");
+      }
+      finally
+      {
+        _DownloadProgressHistory.Clear();
       }
       return status;
     }

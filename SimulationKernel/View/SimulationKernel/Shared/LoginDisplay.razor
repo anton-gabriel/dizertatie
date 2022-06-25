@@ -6,9 +6,9 @@
 <AuthorizeView>
   <Authorized>
     <div class="d-flex align-items-center">
-      <a class="link-light" style="text-decoration: none" href="Identity/Account/Manage/Index">
+      <span class="link-light">
         @context.User.Identity?.Name
-      </a>
+      </span>
       <div style="margin-left:10px;">
         <form action="/Logout?returnUrl=%2F" method="post">
           <button class="btn btn-link text-light" type="submit">Logout</button>

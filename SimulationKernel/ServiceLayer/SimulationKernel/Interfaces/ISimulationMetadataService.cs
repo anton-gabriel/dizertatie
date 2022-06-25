@@ -15,6 +15,11 @@
      string userName,
      SimulationMetadata simulation);
 
-    IEnumerable<SimulationMetadata> GetUserProcessings(string userName, int limit);
+    IEnumerable<SimulationMetadata> GetUserProcessings(
+      string userName,
+      int pageNumber,
+      int pageSize);
+
+    int GetUserProcessings(string userName);
   }
 }

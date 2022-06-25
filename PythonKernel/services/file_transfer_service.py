@@ -7,6 +7,7 @@ from pathlib import Path
 import run_model
 import core_model
 import cloth_model
+import tensorflow.compat.v1 as tf
 
 RESULTS_DIRECTORY = 'Results'
 TRAINED_MODEL_DIRECTORY = 'checkpoint'
@@ -87,6 +88,7 @@ class FileTransferService(file_tranfer_pb2_grpc.FileTransferServicer):
         Path(results_location).mkdir(parents=True, exist_ok=True)
 
         # Model
+        # tf.enable_eager_execution()
         learned_model = core_model.EncodeProcessDecode(output_size=3, latent_size=128, num_layers=2, message_passing_steps=15)
         model = cloth_model.Model(learned_model)
         run_model.simulate(

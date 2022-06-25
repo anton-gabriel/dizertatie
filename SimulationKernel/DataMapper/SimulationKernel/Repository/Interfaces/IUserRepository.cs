@@ -4,5 +4,6 @@
 
   public interface IUserRepository : IRepository<User>
   {
+    int GetNumberOfProcessings(string userName);
   }
 }
