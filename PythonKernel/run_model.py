@@ -115,7 +115,8 @@ def simulate(model, obj_path, num_frames, num_rollouts, rollout_path, checkpoint
   dataset = tf.data.Dataset.from_tensors(data_tensor)
 
   inputs = tf.data.make_one_shot_iterator(dataset).get_next()
-  scalar_op, traj_ops = cloth_eval.evaluate(model, inputs)
+  #scalar_op, traj_ops = cloth_eval.evaluate(model, inputs)
+  traj_ops = cloth_eval.evaluate(model, inputs)
   tf.train.create_global_step()
 
   with tf.train.MonitoredTrainingSession(
@@ -123,15 +124,16 @@ def simulate(model, obj_path, num_frames, num_rollouts, rollout_path, checkpoint
       save_checkpoint_secs=None,
       save_checkpoint_steps=None) as sess:
     trajectories = []
-    scalars = []
+    #scalars = []
     print(range(num_rollouts))
     for traj_idx in range(num_rollouts):
       logging.info('Rollout trajectory %d', traj_idx)
-      scalar_data, traj_data = sess.run([scalar_op, traj_ops])
+      #scalar_data, traj_data = sess.run([scalar_op, traj_ops])
+      traj_data = sess.run([traj_ops])
       trajectories.append(traj_data)
-      scalars.append(scalar_data)
-    for key in scalars[0]:
-      logging.info('%s: %g', key, np.mean([x[key] for x in scalars]))
+      # scalars.append(scalar_data)
+    # for key in scalars[0]:
+    #   logging.info('%s: %g', key, np.mean([x[key] for x in scalars]))
     with open(rollout_path, 'wb') as fp:
       pickle.dump(trajectories, fp)
 
@@ -172,8 +174,9 @@ def write_rollout_data(full_dir_path, rollout_data):
         # Save the .obj files
         # gt_pos
         # pred_pos
-        for j in range(len(rollout_data[i]["gt_pos"])):
-            write_obj(full_dir_path + "/" + str(j) + ".obj", rollout_data[i]["pred_pos"][j], rollout_data[i]["faces"][j])
+        #for j in range(len(rollout_data[i]["gt_pos"])):
+        for j in range(40):
+            write_obj(full_dir_path + "/" + str(j) + ".obj", rollout_data[0][i]["pred_pos"][j], rollout_data[0][0]["faces"][0])
 
     return full_dir_path
 

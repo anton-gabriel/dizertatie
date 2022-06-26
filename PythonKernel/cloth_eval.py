@@ -59,18 +59,20 @@ def _rollout(model, initial_state, num_steps):
 def evaluate(model, inputs):
   """Performs model rollouts and create stats."""
   initial_state = {k: v[0] for k, v in inputs.items()}
-  num_steps = inputs['cells'].shape[0]
-  prediction = _rollout(model, initial_state, num_steps)
+  #num_steps = inputs['cells'].shape[0]
+  #prediction = _rollout(model, initial_state, num_steps)
+  prediction = _rollout(model, initial_state, 40)
 
-  error = tf.reduce_mean((prediction - inputs['world_pos'])**2, axis=-1)
+  #error = tf.reduce_mean((prediction - inputs['world_pos'])**2, axis=-1)
   
   # compute the error for frames groups (1, 10...)
-  scalars = {'mse_%d_steps' % horizon: tf.reduce_mean(error[1:horizon+1])
-             for horizon in [1, 10, 20, 50, 100, 200]}
+  #scalars = {'mse_%d_steps' % horizon: tf.reduce_mean(error[1:horizon+1])
+  #           for horizon in [1, 10, 20, 50, 100, 200]}
   traj_ops = {
       'faces': inputs['cells'],
       'mesh_pos': inputs['mesh_pos'],
       'gt_pos': inputs['world_pos'],
       'pred_pos': prediction
   }
-  return scalars, traj_ops
+  #return scalars, traj_ops
+  return traj_ops
